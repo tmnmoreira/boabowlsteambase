@@ -319,7 +319,7 @@ a{color:inherit;text-decoration:none}
 #screen-detail{
   background:var(--cream);
   position:fixed;inset:0;
-  z-index:200;
+  z-index:250;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   transform:translateX(100%);
@@ -1164,6 +1164,7 @@ async function openArticle(article) {
 function closeDetail() {
   document.getElementById('screen-detail').classList.remove('open');
   currentArticle = null;
+  // If category screen is open behind, it will naturally show again
 }
 
 function renderContent(text) {
