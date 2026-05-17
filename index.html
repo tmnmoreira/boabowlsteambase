@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TeamBase — Staff Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ─── CONFIGURATION ─────────────────────────────────────── */
+/* Replace these two values with your Supabase project details */
+/* You can find them in: Supabase Dashboard → Project Settings → API */
+
+/* ─── RESET & BASE ──────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:#F7F3EE;
+  color:#1C1410;
+  min-height:100%;
+  min-height:-webkit-fill-available;
+  overscroll-behavior:none;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,textarea,select{font-family:inherit}
+img,video{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+
+/* ─── DESIGN TOKENS ─────────────────────────────────────── */
+:root{
+  --brand:#3D6B4F;
+  --brand-dark:#2A4D38;
+  --brand-light:#EAF2ED;
+  --brand-mid:#5A9970;
+  --accent:#C8693A;
+  --accent-light:#FAF0EA;
+  --cream:#F7F3EE;
+  --cream-dark:#EDE7DF;
+  --brown:#1C1410;
+  --brown-mid:#5C4B3C;
+  --brown-light:#9C8778;
+  --surface:#FFFFFF;
+  --radius:16px;
+  --radius-sm:10px;
+  --radius-xs:6px;
+  --shadow:0 2px 12px rgba(28,20,16,0.08);
+  --shadow-lg:0 8px 32px rgba(28,20,16,0.12);
+}
+
+/* ─── SCREENS ───────────────────────────────────────────── */
+.screen{display:none;min-height:100vh;min-height:-webkit-fill-available}
+.screen.active{display:flex;flex-direction:column}
+
+/* ─── LOGIN SCREEN ──────────────────────────────────────── */
+#screen-login{
+  background:var(--brand-dark);
+  align-items:center;
+  justify-content:center;
+  padding:32px 24px;
+  position:relative;
+  overflow:hidden;
+}
+#screen-login::before{
+  content:'';
+  position:absolute;
+  top:-80px;right:-80px;
+  width:280px;height:280px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.04);
+}
+#screen-login::after{
+  content:'';
+  position:absolute;
+  bottom:-60px;left:-60px;
+  width:220px;height:220px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.04);
+}
+.login-card{
+  width:100%;
+  max-width:360px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:24px;
+  padding:36px 28px;
+  position:relative;
+  z-index:1;
+}
+.login-logo{
+  font-family:'Fraunces',serif;
+  font-size:32px;
+  font-weight:300;
+  color:#fff;
+  margin-bottom:4px;
+  letter-spacing:-0.5px;
+}
+.login-logo em{font-style:italic;color:#8ECBA4}
+.login-tagline{
+  font-size:13px;
+  color:rgba(255,255,255,0.5);
+  margin-bottom:32px;
+  font-weight:300;
+}
+.login-field{margin-bottom:14px}
+.login-field label{
+  display:block;
+  font-size:12px;
+  font-weight:500;
+  color:rgba(255,255,255,0.6);
+  margin-bottom:6px;
+  letter-spacing:0.3px;
+  text-transform:uppercase;
+}
+.login-field input{
+  width:100%;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:var(--radius-sm);
+  padding:13px 16px;
+  font-size:15px;
+  color:#fff;
+  outline:none;
+  transition:border-color 0.2s;
+}
+.login-field input::placeholder{color:rgba(255,255,255,0.3)}
+.login-field input:focus{border-color:rgba(255,255,255,0.4)}
+.login-btn{
+  width:100%;
+  background:var(--brand-mid);
+  color:#fff;
+  border-radius:var(--radius-sm);
+  padding:14px;
+  font-size:15px;
+  font-weight:500;
+  margin-top:8px;
+  transition:all 0.18s;
+  position:relative;
+}
+.login-btn:active{transform:scale(0.98)}
+.login-btn:disabled{opacity:0.6}
+.login-error{
+  font-size:13px;
+  color:#F4A48A;
+  margin-top:12px;
+  text-align:center;
+  display:none;
+}
+
+/* ─── APP SHELL ─────────────────────────────────────────── */
+#screen-app{background:var(--cream);padding-bottom:80px}
+
+/* ─── HEADER ────────────────────────────────────────────── */
+.app-header{
+  background:var(--brand);
+  padding:env(safe-area-inset-top,16px) 20px 20px;
+  padding-top:max(env(safe-area-inset-top),16px);
+  position:sticky;top:0;z-index:100;
+}
+.header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.app-logo{font-family:'Fraunces',serif;font-size:24px;font-weight:300;color:#fff;letter-spacing:-0.3px}
+.app-logo em{font-style:italic;color:#8ECBA4}
+.header-actions{display:flex;gap:8px}
+.icon-btn{
+  background:rgba(255,255,255,0.12);
+  border-radius:10px;
+  width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#fff;
+  transition:background 0.15s;
+}
+.icon-btn:active{background:rgba(255,255,255,0.2)}
+.search-wrap{
+  background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:12px;
+  display:flex;align-items:center;
+  padding:10px 14px;gap:9px;
+}
+.search-wrap input{
+  background:none;border:none;outline:none;
+  color:#fff;font-size:15px;flex:1;width:100%;
+}
+.search-wrap input::placeholder{color:rgba(255,255,255,0.5)}
+.search-icon{color:rgba(255,255,255,0.6);font-size:15px;flex-shrink:0}
+
+/* ─── CATEGORY PILLS ────────────────────────────────────── */
+.cat-scroll{
+  display:flex;gap:8px;
+  padding:14px 16px 2px;
+  overflow-x:auto;scrollbar-width:none;
+}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-pill{
+  flex-shrink:0;
+  padding:7px 15px;
+  border-radius:20px;
+  font-size:13px;font-weight:500;
+  background:var(--surface);
+  color:var(--brown-mid);
+  border:1px solid var(--cream-dark);
+  transition:all 0.15s;
+  white-space:nowrap;
+}
+.cat-pill.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+/* ─── MAIN CONTENT ──────────────────────────────────────── */
+.content{padding:16px 16px 8px}
+
+/* ─── FEATURED BANNER ───────────────────────────────────── */
+.featured{
+  background:var(--brand);
+  border-radius:var(--radius);
+  padding:22px 20px;
+  margin-bottom:20px;
+  position:relative;overflow:hidden;
+}
+.featured::after{
+  content:'🍃';
+  position:absolute;right:16px;bottom:-4px;
+  font-size:64px;opacity:0.15;
+}
+.featured-label{
+  font-size:11px;font-weight:600;letter-spacing:0.6px;
+  text-transform:uppercase;color:#8ECBA4;
+  margin-bottom:8px;
+}
+.featured-title{
+  font-family:'Fraunces',serif;
+  font-size:22px;font-weight:300;
+  color:#fff;line-height:1.3;
+  margin-bottom:8px;
+}
+.featured-desc{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.5;margin-bottom:16px}
+.featured-btn{
+  background:#fff;color:var(--brand);
+  border-radius:var(--radius-sm);
+  padding:9px 18px;font-size:13px;font-weight:600;
+}
+
+/* ─── SECTION HEADER ────────────────────────────────────── */
+.section-head{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;margin-top:4px;
+}
+.section-title{font-size:16px;font-weight:600;color:var(--brown)}
+.see-all{font-size:13px;color:var(--brand-mid);font-weight:500}
+
+/* ─── CATEGORY GRID ─────────────────────────────────────── */
+.cat-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:10px;margin-bottom:24px;
+}
+.cat-card{
+  background:var(--surface);
+  border-radius:var(--radius);
+  padding:18px 16px;
+  border:1px solid var(--cream-dark);
+  cursor:pointer;
+  transition:transform 0.15s;
+}
+.cat-card:active{transform:scale(0.97)}
+.cat-emoji{
+  width:44px;height:44px;
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:12px;
+}
+.cat-name{font-size:14px;font-weight:600;color:var(--brown);margin-bottom:3px}
+.cat-count{font-size:12px;color:var(--brown-light)}
+
+/* ─── ARTICLE CARDS ─────────────────────────────────────── */
+.article-card{
+  background:var(--surface);
+  border-radius:var(--radius-sm);
+  padding:15px;margin-bottom:10px;
+  border:1px solid var(--cream-dark);
+  cursor:pointer;
+  display:flex;gap:13px;align-items:flex-start;
+  transition:transform 0.15s;
+}
+.article-card:active{transform:scale(0.98)}
+.article-thumb{
+  width:52px;height:52px;
+  border-radius:10px;
+  object-fit:cover;flex-shrink:0;
+  background:var(--cream-dark);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+}
+.article-thumb img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.article-body{flex:1;min-width:0}
+.article-tag{
+  font-size:11px;font-weight:600;
+  letter-spacing:0.3px;text-transform:uppercase;
+  margin-bottom:4px;
+}
+.article-title{font-size:14px;font-weight:500;line-height:1.4;margin-bottom:5px;color:var(--brown)}
+.article-meta{font-size:12px;color:var(--brown-light);display:flex;align-items:center;gap:6px}
+.dot{width:3px;height:3px;border-radius:50%;background:var(--brown-light);display:inline-block}
+.has-video-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  background:#FFF0E8;color:#C8693A;
+  font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:20px;
+  text-transform:uppercase;letter-spacing:0.3px;
+}
+.new-badge{
+  display:inline-flex;align-items:center;
+  background:var(--brand-light);color:var(--brand);
+  font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:20px;
+  text-transform:uppercase;letter-spacing:0.3px;
+}
+
+/* ─── DETAIL VIEW ───────────────────────────────────────── */
+#screen-detail{
+  background:var(--cream);
+  position:fixed;inset:0;
+  z-index:200;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  transform:translateX(100%);
+  transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+#screen-detail.open{transform:translateX(0)}
+.detail-header{
+  background:var(--surface);
+  padding:max(env(safe-area-inset-top),14px) 16px 14px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--cream-dark);
+  position:sticky;top:0;z-index:10;
+}
+.back-btn{
+  background:var(--cream);
+  border:1px solid var(--cream-dark);
+  border-radius:var(--radius-sm);
+  padding:8px 12px;
+  font-size:14px;font-weight:500;
+  color:var(--brown);
+  flex-shrink:0;
+}
+.detail-header-title{
+  font-size:14px;font-weight:600;
+  flex:1;overflow:hidden;
+  white-space:nowrap;text-overflow:ellipsis;
+  color:var(--brown);
+}
+.detail-body{padding:24px 20px 60px}
+.detail-cat-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;
+  font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.4px;
+  margin-bottom:14px;
+}
+.detail-title{
+  font-family:'Fraunces',serif;
+  font-size:28px;font-weight:300;
+  line-height:1.2;margin-bottom:10px;
+  color:var(--brown);
+}
+.detail-meta{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--brown-light);
+  margin-bottom:22px;
+  padding-bottom:20px;
+  border-bottom:1px solid var(--cream-dark);
+  flex-wrap:wrap;
+}
+.detail-cover{
+  width:100%;height:200px;
+  object-fit:cover;border-radius:var(--radius);
+  margin-bottom:20px;
+}
+.detail-video{
+  width:100%;border-radius:var(--radius);
+  margin-bottom:20px;
+  background:#000;
+  max-height:220px;
+}
+.detail-content{font-size:15px;line-height:1.75;color:var(--brown)}
+.detail-content h3{
+  font-size:16px;font-weight:600;
+  margin:22px 0 10px;color:var(--brown);
+}
+.detail-content p{margin-bottom:13px}
+.detail-content ul{padding-left:20px;margin-bottom:13px}
+.detail-content li{margin-bottom:6px}
+.step-card{
+  background:var(--brand-light);
+  border-radius:12px;
+  padding:14px 16px;
+  margin-bottom:9px;
+  display:flex;gap:12px;align-items:flex-start;
+  border-left:3px solid var(--brand);
+  border-radius:0;
+}
+.step-num{
+  background:var(--brand);color:#fff;
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;
+}
+.step-text{font-size:14px;line-height:1.55}
+.warn-box{
+  background:#FFF8EC;
+  border-left:3px solid #E8A030;
+  padding:13px 16px;margin:16px 0;
+  border-radius:0;
+  font-size:14px;line-height:1.5;
+  display:flex;gap:10px;
+}
+.info-box{
+  background:var(--brand-light);
+  border-left:3px solid var(--brand);
+  padding:13px 16px;margin:16px 0;
+  border-radius:0;
+  font-size:14px;line-height:1.5;
+}
+
+/* ─── BOTTOM NAV ────────────────────────────────────────── */
+.bottom-nav{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:var(--surface);
+  border-top:1px solid var(--cream-dark);
+  display:flex;
+  padding:8px 0 max(env(safe-area-inset-bottom),12px);
+  z-index:150;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;gap:3px;
+  padding:4px 0;
+}
+.nav-icon{font-size:22px;transition:transform 0.15s}
+.nav-label{font-size:10px;color:var(--brown-light);font-weight:500}
+.nav-item.active .nav-label{color:var(--brand);font-weight:600}
+.nav-item.active .nav-icon{transform:scale(1.1)}
+
+/* ─── CATEGORY PANEL ────────────────────────────────────── */
+#screen-category{
+  background:var(--cream);
+  position:fixed;inset:0;z-index:200;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  transform:translateX(100%);
+  transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+#screen-category.open{transform:translateX(0)}
+
+/* ─── EMPTY STATE ───────────────────────────────────────── */
+.empty-state{
+  text-align:center;padding:48px 24px;
+  color:var(--brown-light);
+}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-size:16px;font-weight:500;color:var(--brown-mid);margin-bottom:6px}
+.empty-sub{font-size:13px}
+
+/* ─── ADMIN PANEL ───────────────────────────────────────── */
+#screen-admin{
+  background:var(--cream);
+  position:fixed;inset:0;z-index:300;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  transform:translateY(100%);
+  transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+#screen-admin.open{transform:translateY(0)}
+.admin-header{
+  background:var(--brand-dark);
+  padding:max(env(safe-area-inset-top),16px) 20px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.admin-title{
+  font-family:'Fraunces',serif;
+  font-size:22px;font-weight:300;color:#fff;
+  font-style:italic;
+}
+.admin-close-btn{
+  background:rgba(255,255,255,0.12);
+  border-radius:10px;padding:8px 14px;
+  font-size:13px;font-weight:500;color:#fff;
+}
+.admin-body{padding:20px 16px 80px}
+.admin-section-title{
+  font-size:12px;font-weight:600;letter-spacing:0.5px;
+  text-transform:uppercase;color:var(--brown-light);
+  margin-bottom:10px;margin-top:22px;
+}
+.admin-section-title:first-child{margin-top:0}
+.form-group{margin-bottom:14px}
+.form-label{
+  display:block;font-size:13px;font-weight:500;
+  color:var(--brown-mid);margin-bottom:6px;
+}
+.form-input{
+  width:100%;background:var(--surface);
+  border:1px solid var(--cream-dark);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;font-size:15px;
+  color:var(--brown);outline:none;
+  transition:border-color 0.18s;
+  -webkit-appearance:none;
+}
+.form-input:focus{border-color:var(--brand)}
+.form-textarea{
+  width:100%;background:var(--surface);
+  border:1px solid var(--cream-dark);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;font-size:15px;
+  color:var(--brown);outline:none;
+  min-height:120px;resize:vertical;
+  transition:border-color 0.18s;
+  -webkit-appearance:none;
+}
+.form-textarea:focus{border-color:var(--brand)}
+.form-select{
+  width:100%;background:var(--surface);
+  border:1px solid var(--cream-dark);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;font-size:15px;
+  color:var(--brown);outline:none;
+  -webkit-appearance:none;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%239C8778' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  padding-right:36px;
+}
+.upload-zone{
+  width:100%;
+  background:var(--surface);
+  border:2px dashed var(--cream-dark);
+  border-radius:var(--radius-sm);
+  padding:24px 16px;
+  text-align:center;
+  cursor:pointer;
+  transition:border-color 0.18s;
+}
+.upload-zone:hover{border-color:var(--brand)}
+.upload-zone input{display:none}
+.upload-icon{font-size:28px;margin-bottom:8px}
+.upload-label{font-size:13px;color:var(--brown-mid);font-weight:500}
+.upload-sub{font-size:12px;color:var(--brown-light);margin-top:3px}
+.upload-preview{
+  margin-top:12px;
+  display:flex;align-items:center;gap:10px;
+  background:var(--cream);
+  border-radius:var(--radius-sm);
+  padding:10px 12px;
+}
+.upload-preview-icon{font-size:20px}
+.upload-preview-name{font-size:13px;color:var(--brown-mid);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upload-preview-remove{font-size:16px;color:var(--brown-light);padding:2px 6px}
+.primary-btn{
+  width:100%;
+  background:var(--brand);color:#fff;
+  border-radius:var(--radius-sm);
+  padding:15px;font-size:15px;font-weight:500;
+  transition:all 0.18s;margin-top:6px;
+}
+.primary-btn:active{transform:scale(0.98)}
+.primary-btn:disabled{opacity:0.55}
+.danger-btn{
+  width:100%;
+  background:#FFF0EE;color:#C0392B;
+  border:1px solid #F5C6C2;
+  border-radius:var(--radius-sm);
+  padding:13px;font-size:14px;font-weight:500;
+  transition:all 0.18s;margin-top:8px;
+}
+.admin-article-row{
+  background:var(--surface);
+  border:1px solid var(--cream-dark);
+  border-radius:var(--radius-sm);
+  padding:13px 14px;
+  margin-bottom:8px;
+  display:flex;align-items:center;gap:12px;
+  cursor:pointer;
+}
+.admin-article-icon{font-size:20px;flex-shrink:0}
+.admin-article-body{flex:1;min-width:0}
+.admin-article-title{font-size:14px;font-weight:500;color:var(--brown)}
+.admin-article-cat{font-size:12px;color:var(--brown-light);margin-top:2px}
+.admin-article-actions{display:flex;gap:6px}
+.edit-btn{
+  font-size:12px;font-weight:500;
+  background:var(--cream);color:var(--brown-mid);
+  border:1px solid var(--cream-dark);
+  border-radius:var(--radius-xs);
+  padding:5px 10px;
+}
+.delete-btn{
+  font-size:12px;font-weight:500;
+  background:#FFF0EE;color:#C0392B;
+  border:1px solid #F5C6C2;
+  border-radius:var(--radius-xs);
+  padding:5px 10px;
+}
+.admin-tab-bar{
+  display:flex;gap:8px;margin-bottom:20px;
+}
+.admin-tab{
+  flex:1;padding:10px;
+  border-radius:var(--radius-sm);
+  font-size:13px;font-weight:500;
+  color:var(--brown-mid);
+  background:var(--surface);
+  border:1px solid var(--cream-dark);
+  transition:all 0.15s;
+  text-align:center;
+}
+.admin-tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+/* ─── TOAST ─────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:100px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--brown);color:#fff;
+  padding:11px 20px;border-radius:30px;
+  font-size:13px;font-weight:500;
+  opacity:0;transition:all 0.25s;
+  z-index:9999;white-space:nowrap;
+  pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── LOADING ───────────────────────────────────────────── */
+.loading-overlay{
+  position:fixed;inset:0;
+  background:var(--brand-dark);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:9999;
+  transition:opacity 0.4s;
+}
+.loading-logo{
+  font-family:'Fraunces',serif;
+  font-size:42px;font-weight:300;
+  color:#fff;font-style:italic;
+  margin-bottom:12px;
+}
+.loading-spinner{
+  width:24px;height:24px;
+  border:2px solid rgba(255,255,255,0.2);
+  border-top-color:rgba(255,255,255,0.8);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay.fade-out{opacity:0;pointer-events:none}
+
+/* ─── TAG COLORS ────────────────────────────────────────── */
+.tag-recipes{color:#1A6B5A;background:#E6F4F1}
+.tag-procedures{color:#8A5E00;background:#FFF8E6}
+.tag-training{color:#2355C3;background:#EAF0FF}
+.tag-troubleshooting{color:#6B35CF;background:#F3EEFF}
+.tag-safety{color:#C24A0D;background:#FFF0EB}
+.tag-hr{color:#C22B2B;background:#FFEAEA}
+
+.cat-bg-recipes{background:#E6F4F1}
+.cat-bg-procedures{background:#FFF8E6}
+.cat-bg-training{background:#EAF0FF}
+.cat-bg-troubleshooting{background:#F3EEFF}
+.cat-bg-safety{background:#FFF0EB}
+.cat-bg-hr{background:#FFEAEA}
+</style>
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-logo">TeamBase</div>
+  <div class="loading-spinner"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  SCREEN: LOGIN                             -->
+<!-- ══════════════════════════════════════════ -->
+<div class="screen" id="screen-login">
+  <div class="login-card">
+    <div class="login-logo">Team<em>Base</em></div>
+    <div class="login-tagline">Staff knowledge hub</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="loginEmail" placeholder="Enter username" autocomplete="username" autocapitalize="none">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  SCREEN: MAIN APP                          -->
+<!-- ══════════════════════════════════════════ -->
+<div class="screen" id="screen-app">
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="header-row">
+      <div class="app-logo">Team<em>Base</em></div>
+      <div class="header-actions">
+        <button class="icon-btn" id="adminBtn" onclick="openAdmin()" style="display:none" title="Admin">⚙️</button>
+        <button class="icon-btn" onclick="doLogout()" title="Sign out">🚪</button>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search recipes, guides…" oninput="handleSearch(this.value)">
+    </div>
+  </div>
+
+  <!-- CATEGORY PILLS -->
+  <div class="cat-scroll" id="catPills">
+    <button class="cat-pill active" onclick="filterCat('all',this)">All</button>
+    <button class="cat-pill" onclick="filterCat('recipes',this)">🍓 Recipes</button>
+    <button class="cat-pill" onclick="filterCat('procedures',this)">📋 Procedures</button>
+    <button class="cat-pill" onclick="filterCat('training',this)">🎓 Training</button>
+    <button class="cat-pill" onclick="filterCat('troubleshooting',this)">🔧 Troubleshoot</button>
+    <button class="cat-pill" onclick="filterCat('safety',this)">⚠️ Safety</button>
+    <button class="cat-pill" onclick="filterCat('hr',this)">👥 HR</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content" id="mainContent">
+    <!-- Featured banner (shown in 'all' view) -->
+    <div id="featuredBanner" class="featured" style="display:none">
+      <div class="featured-label">⭐ Pinned</div>
+      <div class="featured-title" id="featuredTitle">Loading…</div>
+      <div class="featured-desc" id="featuredDesc"></div>
+      <button class="featured-btn" id="featuredBtn">Read now →</button>
+    </div>
+
+    <!-- Category grid (shown in 'all' view) -->
+    <div id="catGrid" style="display:none">
+      <div class="section-head">
+        <span class="section-title">Categories</span>
+      </div>
+      <div class="cat-grid">
+        <div class="cat-card" onclick="openCatScreen('recipes')">
+          <div class="cat-emoji cat-bg-recipes">🍓</div>
+          <div class="cat-name">Recipes</div>
+          <div class="cat-count" id="count-recipes">— articles</div>
+        </div>
+        <div class="cat-card" onclick="openCatScreen('procedures')">
+          <div class="cat-emoji cat-bg-procedures">📋</div>
+          <div class="cat-name">Procedures</div>
+          <div class="cat-count" id="count-procedures">— articles</div>
+        </div>
+        <div class="cat-card" onclick="openCatScreen('training')">
+          <div class="cat-emoji cat-bg-training">🎓</div>
+          <div class="cat-name">Training</div>
+          <div class="cat-count" id="count-training">— articles</div>
+        </div>
+        <div class="cat-card" onclick="openCatScreen('troubleshooting')">
+          <div class="cat-emoji cat-bg-troubleshooting">🔧</div>
+          <div class="cat-name">Troubleshooting</div>
+          <div class="cat-count" id="count-troubleshooting">— articles</div>
+        </div>
+        <div class="cat-card" onclick="openCatScreen('safety')">
+          <div class="cat-emoji cat-bg-safety">⚠️</div>
+          <div class="cat-name">Safety</div>
+          <div class="cat-count" id="count-safety">— articles</div>
+        </div>
+        <div class="cat-card" onclick="openCatScreen('hr')">
+          <div class="cat-emoji cat-bg-hr">👥</div>
+          <div class="cat-name">HR & Policies</div>
+          <div class="cat-count" id="count-hr">— articles</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Article list -->
+    <div id="articleSection">
+      <div class="section-head">
+        <span class="section-title" id="articleSectionTitle">Recently updated</span>
+      </div>
+      <div id="articleList"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="goHome(this)">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" onclick="goSearch(this)">
+      <span class="nav-icon">🔍</span>
+      <span class="nav-label">Search</span>
+    </button>
+    <button class="nav-item" onclick="goBookmarks(this)">
+      <span class="nav-icon">🔖</span>
+      <span class="nav-label">Saved</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  SCREEN: ARTICLE DETAIL                    -->
+<!-- ══════════════════════════════════════════ -->
+<div id="screen-detail">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">← Back</button>
+    <div class="detail-header-title" id="detailHeaderTitle"></div>
+    <button onclick="toggleBookmark()" id="bookmarkBtn" style="font-size:20px;padding:4px 8px">🔖</button>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  SCREEN: CATEGORY PANEL                    -->
+<!-- ══════════════════════════════════════════ -->
+<div id="screen-category">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeCatScreen()">← Back</button>
+    <div class="detail-header-title" id="catScreenTitle"></div>
+  </div>
+  <div style="padding:16px 16px 80px" id="catScreenList"></div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  SCREEN: ADMIN PANEL                       -->
+<!-- ══════════════════════════════════════════ -->
+<div id="screen-admin">
+  <div class="admin-header">
+    <div class="admin-title">Admin Panel</div>
+    <button class="admin-close-btn" onclick="closeAdmin()">Done</button>
+  </div>
+  <div class="admin-body">
+    <div class="admin-tab-bar">
+      <button class="admin-tab active" onclick="switchAdminTab('articles',this)">📄 Articles</button>
+      <button class="admin-tab" onclick="switchAdminTab('new',this)">➕ New Article</button>
+    </div>
+
+    <!-- Articles list tab -->
+    <div id="adminArticlesTab">
+      <div class="admin-section-title">All articles</div>
+      <div id="adminArticleList"></div>
+    </div>
+
+    <!-- New / Edit article tab -->
+    <div id="adminNewTab" style="display:none">
+      <input type="hidden" id="editingId">
+      <div class="admin-section-title">Article details</div>
+      <div class="form-group">
+        <label class="form-label">Title *</label>
+        <input type="text" class="form-input" id="fTitle" placeholder="e.g. Açaí Bowl — Standard Recipe">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select class="form-select" id="fCategory">
+          <option value="">Select category…</option>
+          <option value="recipes">🍓 Recipes</option>
+          <option value="procedures">📋 Procedures</option>
+          <option value="training">🎓 Training</option>
+          <option value="troubleshooting">🔧 Troubleshooting</option>
+          <option value="safety">⚠️ Safety</option>
+          <option value="hr">👥 HR & Policies</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Summary (shown in card preview)</label>
+        <input type="text" class="form-input" id="fSummary" placeholder="One-line description…">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Content *</label>
+        <textarea class="form-textarea" id="fContent" placeholder="Write the article content here. Use markdown-style headings with ## and steps numbered 1. 2. 3."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pin as featured?</label>
+        <select class="form-select" id="fPinned">
+          <option value="false">No</option>
+          <option value="true">Yes — show on home banner</option>
+        </select>
+      </div>
+
+      <div class="admin-section-title">Media</div>
+      <div class="form-group">
+        <label class="form-label">Cover image (optional)</label>
+        <div class="upload-zone" onclick="document.getElementById('imgUpload').click()">
+          <input type="file" id="imgUpload" accept="image/*" onchange="previewFile(this,'imgPreview','imgName')">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-label">Tap to upload image</div>
+          <div class="upload-sub">JPG, PNG, WEBP — max 5MB</div>
+        </div>
+        <div class="upload-preview" id="imgPreview" style="display:none">
+          <span class="upload-preview-icon">🖼️</span>
+          <span class="upload-preview-name" id="imgName"></span>
+          <button class="upload-preview-remove" onclick="clearFile('imgUpload','imgPreview')">✕</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Video clip (optional, max 2 min)</label>
+        <div class="upload-zone" onclick="document.getElementById('vidUpload').click()">
+          <input type="file" id="vidUpload" accept="video/*" onchange="previewFile(this,'vidPreview','vidName')">
+          <div class="upload-icon">🎬</div>
+          <div class="upload-label">Tap to upload video</div>
+          <div class="upload-sub">MP4, MOV — max 50MB</div>
+        </div>
+        <div class="upload-preview" id="vidPreview" style="display:none">
+          <span class="upload-preview-icon">🎬</span>
+          <span class="upload-preview-name" id="vidName"></span>
+          <button class="upload-preview-remove" onclick="clearFile('vidUpload','vidPreview')">✕</button>
+        </div>
+      </div>
+
+      <button class="primary-btn" id="saveBtn" onclick="saveArticle()">Save Article</button>
+      <button class="danger-btn" id="cancelEditBtn" onclick="cancelEdit()" style="display:none">Cancel edit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIGURATION — REPLACE THESE WITH YOUR SUPABASE VALUES
+// ══════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://vpnmokyekoscrrybuczp.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbm1va3lla29zY3JyeWJ1Y3pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5OTg3MzUsImV4cCI6MjA5NDU3NDczNX0.sXE2GMMFL4-pRSUsMGD9lGvqYCO0hq5B3PKuMWpvvmU';
+const ADMIN_EMAIL = 'admin@theboabowls.com'; // your admin account email
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let isAdmin = false;
+let allArticles = [];
+let currentArticle = null;
+let currentCategory = 'all';
+let bookmarks = JSON.parse(localStorage.getItem('tb_bookmarks') || '[]');
+
+const CATEGORIES = {
+  recipes:        { label:'Recipes',        emoji:'🍓' },
+  procedures:     { label:'Procedures',     emoji:'📋' },
+  training:       { label:'Training',       emoji:'🎓' },
+  troubleshooting:{ label:'Troubleshooting',emoji:'🔧' },
+  safety:         { label:'Safety',         emoji:'⚠️' },
+  hr:             { label:'HR & Policies',  emoji:'👥' },
+};
+
+// ══════════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════════
+async function boot() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    isAdmin = currentUser.email === ADMIN_EMAIL;
+    await enterApp();
+  } else {
+    showScreen('login');
+  }
+  fadeLoader();
+}
+
+function fadeLoader() {
+  const el = document.getElementById('loadingOverlay');
+  el.classList.add('fade-out');
+  setTimeout(() => el.style.display = 'none', 400);
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById('screen-' + name);
+  if (s) s.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPassword').value;
+  const err   = document.getElementById('loginError');
+  const btn   = document.getElementById('loginBtn');
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  // Support username-style logins by appending domain if no @ present
+  const emailFinal = email.includes('@') ? email : email + '@teambase.app';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email: emailFinal, password: pass });
+  if (error) {
+    err.textContent = 'Incorrect username or password.';
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+    return;
+  }
+  currentUser = data.user;
+  isAdmin = currentUser.email === ADMIN_EMAIL;
+  await enterApp();
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  currentUser = null; isAdmin = false; allArticles = [];
+  showScreen('login');
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+}
+
+// ══════════════════════════════════════════════════════════
+//  APP ENTRY
+// ══════════════════════════════════════════════════════════
+async function enterApp() {
+  showScreen('app');
+  document.getElementById('adminBtn').style.display = isAdmin ? 'flex' : 'none';
+  await loadArticles();
+  renderHome();
+}
+
+// ══════════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════════
+async function loadArticles() {
+  const { data, error } = await sb.from('articles')
+    .select('*')
+    .order('updated_at', { ascending: false });
+  if (!error && data) allArticles = data;
+}
+
+async function getSignedUrl(bucket, path) {
+  if (!path) return null;
+  const { data } = await sb.storage.from(bucket).createSignedUrl(path, 3600);
+  return data?.signedUrl || null;
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER HOME
+// ══════════════════════════════════════════════════════════
+function renderHome() {
+  currentCategory = 'all';
+  document.getElementById('searchInput').value = '';
+
+  // Featured banner
+  const pinned = allArticles.find(a => a.is_pinned);
+  const banner = document.getElementById('featuredBanner');
+  if (pinned) {
+    document.getElementById('featuredTitle').textContent = pinned.title;
+    document.getElementById('featuredDesc').textContent  = pinned.summary || '';
+    document.getElementById('featuredBtn').onclick = () => openArticle(pinned);
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Category counts
+  document.getElementById('catGrid').style.display = 'block';
+  Object.keys(CATEGORIES).forEach(cat => {
+    const count = allArticles.filter(a => a.category === cat).length;
+    const el = document.getElementById('count-' + cat);
+    if (el) el.textContent = count + (count === 1 ? ' article' : ' articles');
+  });
+
+  // Recent articles
+  document.getElementById('articleSectionTitle').textContent = 'Recently updated';
+  renderArticleList(allArticles.slice(0, 8));
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER ARTICLES
+// ══════════════════════════════════════════════════════════
+function renderArticleList(articles) {
+  const el = document.getElementById('articleList');
+  if (!articles.length) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">Nothing here yet</div>
+      <div class="empty-sub">Check back soon</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = articles.map(a => articleCard(a)).join('');
+}
+
+function articleCard(a) {
+  const cat = CATEGORIES[a.category] || { label: a.category, emoji: '📄' };
+  const saved = bookmarks.includes(a.id);
+  const isNew = a.created_at && (Date.now() - new Date(a.created_at)) < 7 * 24 * 60 * 60 * 1000;
+  return `<div class="article-card" onclick="openArticle(${JSON.stringify(a).replace(/"/g,'&quot;')})">
+    <div class="article-thumb">${cat.emoji}</div>
+    <div class="article-body">
+      <div class="article-tag tag-${a.category}">${cat.label}</div>
+      <div class="article-title">${escHtml(a.title)}</div>
+      <div class="article-meta">
+        ${a.read_time ? `<span>${a.read_time} min read</span><span class="dot"></span>` : ''}
+        <span>${timeAgo(a.updated_at)}</span>
+        ${a.has_video ? `<span class="dot"></span><span class="has-video-badge">▶ Video</span>` : ''}
+        ${isNew ? `<span class="dot"></span><span class="new-badge">New</span>` : ''}
+        ${saved ? `<span class="dot"></span><span style="color:var(--accent);font-size:12px">🔖</span>` : ''}
+      </div>
+    </div>
+    <span style="color:var(--brown-light);font-size:18px;margin-top:2px">›</span>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+//  ARTICLE DETAIL
+// ══════════════════════════════════════════════════════════
+async function openArticle(article) {
+  currentArticle = article;
+  document.getElementById('detailHeaderTitle').textContent = article.title;
+  document.getElementById('bookmarkBtn').textContent = bookmarks.includes(article.id) ? '🔖' : '🔖';
+
+  const cat = CATEGORIES[article.category] || { label: article.category, emoji: '📄' };
+  const tagColors = {
+    recipes:'background:#E6F4F1;color:#1A6B5A',
+    procedures:'background:#FFF8E6;color:#8A5E00',
+    training:'background:#EAF0FF;color:#2355C3',
+    troubleshooting:'background:#F3EEFF;color:#6B35CF',
+    safety:'background:#FFF0EB;color:#C24A0D',
+    hr:'background:#FFEAEA;color:#C22B2B',
+  };
+  const tagStyle = tagColors[article.category] || '';
+
+  let mediaHtml = '';
+  if (article.image_path) {
+    const url = await getSignedUrl('article-media', article.image_path);
+    if (url) mediaHtml += `<img src="${url}" class="detail-cover" alt="Cover image">`;
+  }
+  if (article.video_path) {
+    const url = await getSignedUrl('article-media', article.video_path);
+    if (url) mediaHtml += `<video class="detail-video" controls playsinline preload="metadata">
+      <source src="${url}" type="video/mp4">Your browser doesn't support video.</video>`;
+  }
+
+  const contentHtml = renderContent(article.content || '');
+
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-cat-badge" style="${tagStyle}">${cat.emoji} ${cat.label}</div>
+    <div class="detail-title">${escHtml(article.title)}</div>
+    <div class="detail-meta">
+      ${article.read_time ? `<span>${article.read_time} min read</span><span class="dot"></span>` : ''}
+      <span>Updated ${timeAgo(article.updated_at)}</span>
+      ${article.has_video ? `<span class="dot"></span><span class="has-video-badge">▶ Video</span>` : ''}
+    </div>
+    ${mediaHtml}
+    <div class="detail-content">${contentHtml}</div>
+  `;
+
+  document.getElementById('screen-detail').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('screen-detail').classList.remove('open');
+  currentArticle = null;
+}
+
+function renderContent(text) {
+  // Simple markdown-like renderer
+  const lines = text.split('\n');
+  let html = '';
+  let inList = false;
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (inList) { html += '</ul>'; inList = false; }
+      return;
+    }
+    if (trimmed.startsWith('## ')) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<h3>${escHtml(trimmed.slice(3))}</h3>`;
+    } else if (trimmed.startsWith('⚠️') || trimmed.startsWith('WARNING:')) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<div class="warn-box">⚠️ <span>${escHtml(trimmed.replace(/^⚠️\s*/,'').replace(/^WARNING:\s*/,''))}</span></div>`;
+    } else if (trimmed.startsWith('ℹ️') || trimmed.startsWith('NOTE:')) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<div class="info-box">${escHtml(trimmed.replace(/^ℹ️\s*/,'').replace(/^NOTE:\s*/,''))}</div>`;
+    } else if (/^\d+\.\s/.test(trimmed)) {
+      if (inList) { html += '</ul>'; inList = false; }
+      const num = trimmed.match(/^(\d+)\./)[1];
+      const content = trimmed.slice(trimmed.indexOf(' ') + 1);
+      html += `<div class="step-card"><div class="step-num">${num}</div><div class="step-text">${escHtml(content)}</div></div>`;
+    } else if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+      if (!inList) { html += '<ul>'; inList = true; }
+      html += `<li>${escHtml(trimmed.slice(2))}</li>`;
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<p>${escHtml(trimmed)}</p>`;
+    }
+  });
+  if (inList) html += '</ul>';
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════
+//  CATEGORY SCREEN
+// ══════════════════════════════════════════════════════════
+function openCatScreen(cat) {
+  const info = CATEGORIES[cat];
+  document.getElementById('catScreenTitle').textContent = info.emoji + ' ' + info.label;
+  const articles = allArticles.filter(a => a.category === cat);
+  const el = document.getElementById('catScreenList');
+  if (!articles.length) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">${info.emoji}</div>
+      <div class="empty-title">No ${info.label} articles yet</div>
+      <div class="empty-sub">${isAdmin ? 'Use the admin panel to add the first one.' : 'Check back soon.'}</div>
+    </div>`;
+  } else {
+    el.innerHTML = articles.map(a => articleCard(a)).join('');
+  }
+  document.getElementById('screen-category').classList.add('open');
+}
+
+function closeCatScreen() {
+  document.getElementById('screen-category').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════
+function filterCat(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const featured = document.getElementById('featuredBanner');
+  const catGrid  = document.getElementById('catGrid');
+  if (cat === 'all') {
+    featured.style.display = allArticles.find(a => a.is_pinned) ? 'block' : 'none';
+    catGrid.style.display = 'block';
+    document.getElementById('articleSectionTitle').textContent = 'Recently updated';
+    renderArticleList(allArticles.slice(0, 8));
+  } else {
+    featured.style.display = 'none';
+    catGrid.style.display = 'none';
+    const cat_info = CATEGORIES[cat];
+    document.getElementById('articleSectionTitle').textContent = cat_info.emoji + ' ' + cat_info.label;
+    renderArticleList(allArticles.filter(a => a.category === cat));
+  }
+}
+
+function handleSearch(q) {
+  const featured = document.getElementById('featuredBanner');
+  const catGrid  = document.getElementById('catGrid');
+  if (!q.trim()) {
+    renderHome(); return;
+  }
+  featured.style.display = 'none';
+  catGrid.style.display = 'none';
+  const lq = q.toLowerCase();
+  const results = allArticles.filter(a =>
+    a.title.toLowerCase().includes(lq) ||
+    (a.summary || '').toLowerCase().includes(lq) ||
+    (a.content || '').toLowerCase().includes(lq) ||
+    (a.category || '').toLowerCase().includes(lq)
+  );
+  document.getElementById('articleSectionTitle').textContent = `Results for "${q}"`;
+  renderArticleList(results);
+}
+
+function goHome(btn) {
+  setActiveNav(btn);
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('.cat-pill').forEach((p,i) => p.classList.toggle('active', i===0));
+  renderHome();
+}
+
+function goSearch(btn) {
+  setActiveNav(btn);
+  document.getElementById('searchInput').focus();
+}
+
+function goBookmarks(btn) {
+  setActiveNav(btn);
+  document.getElementById('featuredBanner').style.display = 'none';
+  document.getElementById('catGrid').style.display = 'none';
+  const saved = allArticles.filter(a => bookmarks.includes(a.id));
+  document.getElementById('articleSectionTitle').textContent = '🔖 Saved articles';
+  renderArticleList(saved);
+}
+
+function setActiveNav(btn) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+//  BOOKMARKS
+// ══════════════════════════════════════════════════════════
+function toggleBookmark() {
+  if (!currentArticle) return;
+  const id = currentArticle.id;
+  if (bookmarks.includes(id)) {
+    bookmarks = bookmarks.filter(b => b !== id);
+    showToast('Removed from saved');
+  } else {
+    bookmarks.push(id);
+    showToast('Saved!');
+  }
+  localStorage.setItem('tb_bookmarks', JSON.stringify(bookmarks));
+}
+
+// ══════════════════════════════════════════════════════════
+//  ADMIN PANEL
+// ══════════════════════════════════════════════════════════
+function openAdmin() {
+  loadAdminArticles();
+  document.getElementById('screen-admin').classList.add('open');
+}
+
+function closeAdmin() {
+  document.getElementById('screen-admin').classList.remove('open');
+  loadArticles().then(renderHome);
+}
+
+function switchAdminTab(tab, btn) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('adminArticlesTab').style.display = tab === 'articles' ? 'block' : 'none';
+  document.getElementById('adminNewTab').style.display      = tab === 'new'      ? 'block' : 'none';
+}
+
+async function loadAdminArticles() {
+  const { data } = await sb.from('articles').select('*').order('updated_at', { ascending: false });
+  const el = document.getElementById('adminArticleList');
+  if (!data || !data.length) {
+    el.innerHTML = '<div style="color:var(--brown-light);font-size:13px;padding:12px 0">No articles yet. Use the New Article tab to create one.</div>';
+    return;
+  }
+  el.innerHTML = data.map(a => {
+    const cat = CATEGORIES[a.category] || { emoji:'📄' };
+    return `<div class="admin-article-row">
+      <span class="admin-article-icon">${cat.emoji}</span>
+      <div class="admin-article-body">
+        <div class="admin-article-title">${escHtml(a.title)}</div>
+        <div class="admin-article-cat">${escHtml(a.category)} · ${timeAgo(a.updated_at)}</div>
+      </div>
+      <div class="admin-article-actions">
+        <button class="edit-btn" onclick="editArticle(${a.id})">Edit</button>
+        <button class="delete-btn" onclick="deleteArticle(${a.id},'${escHtml(a.title)}')">Del</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function editArticle(id) {
+  const { data: a } = await sb.from('articles').select('*').eq('id', id).single();
+  if (!a) return;
+  document.getElementById('editingId').value = a.id;
+  document.getElementById('fTitle').value    = a.title || '';
+  document.getElementById('fCategory').value = a.category || '';
+  document.getElementById('fSummary').value  = a.summary || '';
+  document.getElementById('fContent').value  = a.content || '';
+  document.getElementById('fPinned').value   = a.is_pinned ? 'true' : 'false';
+  document.getElementById('cancelEditBtn').style.display = 'block';
+  // switch to new tab
+  const tabs = document.querySelectorAll('.admin-tab');
+  switchAdminTab('new', tabs[1]);
+}
+
+function cancelEdit() {
+  clearForm();
+  const tabs = document.querySelectorAll('.admin-tab');
+  switchAdminTab('articles', tabs[0]);
+}
+
+async function saveArticle() {
+  const id       = document.getElementById('editingId').value;
+  const title    = document.getElementById('fTitle').value.trim();
+  const category = document.getElementById('fCategory').value;
+  const summary  = document.getElementById('fSummary').value.trim();
+  const content  = document.getElementById('fContent').value.trim();
+  const is_pinned = document.getElementById('fPinned').value === 'true';
+
+  if (!title || !category || !content) {
+    showToast('Please fill in title, category and content');
+    return;
+  }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  // Upload image if selected
+  let image_path = null;
+  const imgFile = document.getElementById('imgUpload').files[0];
+  if (imgFile) {
+    const ext = imgFile.name.split('.').pop();
+    const path = `images/${Date.now()}.${ext}`;
+    const { error } = await sb.storage.from('article-media').upload(path, imgFile);
+    if (!error) image_path = path;
+  }
+
+  // Upload video if selected
+  let video_path = null;
+  let has_video = false;
+  const vidFile = document.getElementById('vidUpload').files[0];
+  if (vidFile) {
+    const ext = vidFile.name.split('.').pop();
+    const path = `videos/${Date.now()}.${ext}`;
+    const { error } = await sb.storage.from('article-media').upload(path, vidFile, { upsert: false });
+    if (!error) { video_path = path; has_video = true; }
+  }
+
+  const payload = {
+    title, category, summary, content, is_pinned,
+    updated_at: new Date().toISOString(),
+    ...(image_path && { image_path }),
+    ...(video_path && { video_path, has_video }),
+  };
+
+  let error;
+  if (id) {
+    ({ error } = await sb.from('articles').update(payload).eq('id', id));
+  } else {
+    payload.created_at = new Date().toISOString();
+    ({ error } = await sb.from('articles').insert(payload));
+  }
+
+  btn.disabled = false; btn.textContent = 'Save Article';
+
+  if (error) { showToast('Error: ' + error.message); return; }
+
+  showToast(id ? 'Article updated!' : 'Article created!');
+  clearForm();
+  await loadAdminArticles();
+  const tabs = document.querySelectorAll('.admin-tab');
+  switchAdminTab('articles', tabs[0]);
+}
+
+async function deleteArticle(id, title) {
+  if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+  await sb.from('articles').delete().eq('id', id);
+  showToast('Article deleted');
+  loadAdminArticles();
+}
+
+function clearForm() {
+  document.getElementById('editingId').value = '';
+  document.getElementById('fTitle').value    = '';
+  document.getElementById('fCategory').value = '';
+  document.getElementById('fSummary').value  = '';
+  document.getElementById('fContent').value  = '';
+  document.getElementById('fPinned').value   = 'false';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+  clearFile('imgUpload','imgPreview');
+  clearFile('vidUpload','vidPreview');
+}
+
+function previewFile(input, previewId, nameId) {
+  if (input.files[0]) {
+    document.getElementById(previewId).style.display = 'flex';
+    document.getElementById(nameId).textContent = input.files[0].name;
+  }
+}
+
+function clearFile(inputId, previewId) {
+  document.getElementById(inputId).value = '';
+  document.getElementById(previewId).style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════════
+function escHtml(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = (Date.now() - new Date(dateStr)) / 1000;
+  if (diff < 60)    return 'just now';
+  if (diff < 3600)  return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  if (diff < 604800)return Math.floor(diff/86400) + 'd ago';
+  return new Date(dateStr).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════════════════════════════
+//  KEYBOARD: close detail on back gesture
+// ══════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeDetail();
+    closeCatScreen();
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════════════════════
+boot();
+</script>
+</body>
+</html>
