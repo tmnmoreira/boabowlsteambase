@@ -925,9 +925,9 @@ a{color:inherit;text-decoration:none}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION — REPLACE THESE WITH YOUR SUPABASE VALUES
 // ══════════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://vpnmokyekoscrrybuczp.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbm1va3lla29zY3JyeWJ1Y3pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5OTg3MzUsImV4cCI6MjA5NDU3NDczNX0.sXE2GMMFL4-pRSUsMGD9lGvqYCO0hq5B3PKuMWpvvmU';
-const ADMIN_EMAIL = 'admin@theboabowls.com'; // your admin account email
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const ADMIN_EMAIL = 'admin@teambase.app'; // your admin account email
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -1092,7 +1092,7 @@ function articleCard(a) {
   const cat = CATEGORIES[a.category] || { label: a.category, emoji: '📄' };
   const saved = bookmarks.includes(a.id);
   const isNew = a.created_at && (Date.now() - new Date(a.created_at)) < 7 * 24 * 60 * 60 * 1000;
-  return `<div class="article-card" onclick="openArticle(${JSON.stringify(a).replace(/"/g,'&quot;')})">
+  return `<div class="article-card" onclick="openArticleById(${a.id})">
     <div class="article-thumb">${cat.emoji}</div>
     <div class="article-body">
       <div class="article-tag tag-${a.category}">${cat.label}</div>
@@ -1107,6 +1107,11 @@ function articleCard(a) {
     </div>
     <span style="color:var(--brown-light);font-size:18px;margin-top:2px">›</span>
   </div>`;
+}
+
+function openArticleById(id) {
+  const article = allArticles.find(a => a.id === id);
+  if (article) openArticle(article);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1205,16 +1210,16 @@ function renderContent(text) {
 function openCatScreen(cat) {
   const info = CATEGORIES[cat];
   document.getElementById('catScreenTitle').textContent = info.emoji + ' ' + info.label;
-  const articles = allArticles.filter(a => a.category === cat);
+  const filtered = allArticles.filter(a => a.category === cat);
   const el = document.getElementById('catScreenList');
-  if (!articles.length) {
+  if (!filtered.length) {
     el.innerHTML = `<div class="empty-state">
       <div class="empty-icon">${info.emoji}</div>
       <div class="empty-title">No ${info.label} articles yet</div>
       <div class="empty-sub">${isAdmin ? 'Use the admin panel to add the first one.' : 'Check back soon.'}</div>
     </div>`;
   } else {
-    el.innerHTML = articles.map(a => articleCard(a)).join('');
+    el.innerHTML = filtered.map(a => articleCard(a)).join('');
   }
   document.getElementById('screen-category').classList.add('open');
 }
