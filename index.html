@@ -1084,6 +1084,7 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
       <div id="invItemsList" class="inv-items-list"></div>
+      <div id="invCountProgress" style="font-size:12px;color:var(--brown-light);text-align:right;margin:-8px 0 14px;display:none"></div>
       <div class="form-group" style="margin-bottom:14px">
         <label class="form-label">Notes (optional)</label>
         <textarea class="form-textarea" id="invNotes" placeholder="Issues, damaged items, shortages…" style="min-height:68px"></textarea>
@@ -1877,7 +1878,7 @@ function renderInvCountTab() {
         </div>
         <div class="inv-qty-wrap">
           <button class="inv-qty-btn" onclick="adjustQty('iq_${item.id}',-1)">−</button>
-          <input class="inv-qty-input" type="number" id="iq_${item.id}" value="${val}" min="0" step="0.5" placeholder="0">
+          <input class="inv-qty-input" type="number" id="iq_${item.id}" value="${val}" min="0" step="0.5" placeholder="—" oninput="updateCountProgress()">
           <button class="inv-qty-btn" onclick="adjustQty('iq_${item.id}',1)">+</button>
         </div>
       </div>`;
@@ -1891,7 +1892,21 @@ function renderInvCountTab() {
 
 function adjustQty(inputId, delta) {
   const inp = document.getElementById(inputId);
+  if (inp.value === '' && delta < 0) return;
   inp.value = Math.max(0, (parseFloat(inp.value)||0) + delta);
+  updateCountProgress();
+}
+
+function updateCountProgress() {
+  const total   = invItems.length;
+  const filled  = invItems.filter(i => {
+    const inp = document.getElementById('iq_'+i.id);
+    return inp && inp.value !== '';
+  }).length;
+  const el = document.getElementById('invCountProgress');
+  if (!el || !total) return;
+  el.style.display = 'block';
+  el.textContent   = filled + ' of ' + total + ' items counted';
 }
 
 function updateAlertBanner() {
@@ -1921,16 +1936,25 @@ async function submitInventoryCount() {
   const submittedAt  = new Date(date+'T'+new Date().toTimeString().slice(0,8)).toISOString();
   const submissionId = (typeof crypto!=='undefined'&&crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString();
 
-  const rows = invItems.map(item => {
+  // Only include items where staff actually entered a value (not blank)
+  const rows = invItems.reduce((acc, item) => {
     const inp = document.getElementById('iq_'+item.id);
-    return { item_id:item.id, quantity:parseFloat(inp?.value)||0, staff_name:staff, submitted_at:submittedAt, submission_id:submissionId, notes:notes||null };
-  });
+    if (!inp || inp.value === '') return acc;  // skip blank — not counted this session
+    acc.push({ item_id:item.id, quantity:parseFloat(inp.value), staff_name:staff, submitted_at:submittedAt, submission_id:submissionId, notes:notes||null });
+    return acc;
+  }, []);
+
+  if (!rows.length) {
+    btn.disabled=false; btn.textContent='Submit Count';
+    showToast('Enter at least one quantity first');
+    return;
+  }
 
   const { error } = await sb.from('inventory_counts').insert(rows);
   btn.disabled=false; btn.textContent='Submit Count';
   if (error) { showToast('Error: '+error.message); return; }
 
-  showToast('Count submitted! ✓');
+  showToast(`${rows.length} item${rows.length>1?'s':''} submitted ✓`);
   document.getElementById('invNotes').value = '';
   await loadInvData();
   renderInvCountTab();
