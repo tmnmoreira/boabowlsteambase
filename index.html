@@ -668,13 +668,11 @@ a{color:inherit;text-decoration:none}
 .cat-bg-safety{background:#FFF0EB}
 .cat-bg-hr{background:#FFEAEA}
 
-/* ─── INVENTORY SCREEN ──────────────────────────────────── */
+/* ─── INVENTORY ─────────────────────────────────────────── */
 #screen-inventory{
-  background:var(--cream);
-  position:fixed;inset:0;z-index:300;
+  background:var(--cream);position:fixed;inset:0;z-index:300;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
-  transform:translateY(100%);
-  transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 #screen-inventory.open{transform:translateY(0)}
 .inv-header{
@@ -682,116 +680,121 @@ a{color:inherit;text-decoration:none}
   padding:max(env(safe-area-inset-top),16px) 20px 18px;
   display:flex;align-items:center;justify-content:space-between;
 }
-.inv-title{
-  font-family:'Fraunces',serif;
-  font-size:22px;font-weight:300;color:#fff;font-style:italic;
-}
-.inv-close-btn{
-  background:rgba(255,255,255,0.12);
-  border-radius:10px;padding:8px 14px;
-  font-size:13px;font-weight:500;color:#fff;
-}
+.inv-title{font-family:'Fraunces',serif;font-size:22px;font-weight:300;color:#fff;font-style:italic}
+.inv-close-btn{background:rgba(255,255,255,0.12);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:500;color:#fff}
 .inv-body{padding:16px 16px 100px}
-.inv-tab-bar{display:flex;gap:8px;margin-bottom:20px}
+.inv-tab-bar{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
 .inv-tab{
-  flex:1;padding:10px;border-radius:var(--radius-sm);
+  flex:1;padding:9px 6px;border-radius:var(--radius-sm);
   font-size:13px;font-weight:500;color:var(--brown-mid);
   background:var(--surface);border:1px solid var(--cream-dark);
-  transition:all 0.15s;text-align:center;
+  transition:all 0.15s;text-align:center;white-space:nowrap;
 }
 .inv-tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
-
-/* Count form */
 .inv-meta-row{display:flex;gap:10px;margin-bottom:16px}
 .inv-meta-row .form-group{flex:1;margin-bottom:0}
-.inv-items-list{margin-bottom:20px}
+.inv-items-list{margin-bottom:16px}
 .inv-item-row{
-  background:var(--surface);
-  border:1px solid var(--cream-dark);
-  border-radius:var(--radius-sm);
-  padding:12px 14px;margin-bottom:8px;
-  display:flex;align-items:center;gap:12px;
+  background:var(--surface);border:1px solid var(--cream-dark);
+  border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:7px;
+  display:flex;align-items:center;gap:11px;
 }
 .inv-item-row.low-stock{border-color:#F5C6A0;background:#FFFAF5}
 .inv-item-row.out-of-stock{border-color:#F5C6C2;background:#FFF8F8}
 .inv-item-info{flex:1;min-width:0}
 .inv-item-name{font-size:14px;font-weight:500;color:var(--brown)}
-.inv-item-unit{font-size:12px;color:var(--brown-light);margin-top:1px}
-.inv-item-min{font-size:11px;color:var(--brown-light);margin-top:2px}
-.inv-qty-wrap{display:flex;align-items:center;gap:0;flex-shrink:0}
+.inv-item-sub{font-size:11px;color:var(--brown-light);margin-top:2px}
+.inv-qty-wrap{display:flex;align-items:center;flex-shrink:0}
 .inv-qty-btn{
-  width:34px;height:34px;border-radius:8px;
+  width:32px;height:32px;border-radius:8px;
   background:var(--cream);border:1px solid var(--cream-dark);
   font-size:18px;font-weight:300;color:var(--brown-mid);
-  display:flex;align-items:center;justify-content:center;
-  transition:background 0.12s;
+  display:flex;align-items:center;justify-content:center;transition:background 0.12s;
 }
 .inv-qty-btn:active{background:var(--cream-dark)}
 .inv-qty-input{
-  width:52px;height:34px;
-  text-align:center;font-size:15px;font-weight:500;
+  width:48px;height:32px;text-align:center;font-size:15px;font-weight:500;
   color:var(--brown);background:var(--surface);
-  border:1px solid var(--cream-dark);
-  border-left:none;border-right:none;
+  border:1px solid var(--cream-dark);border-left:none;border-right:none;
   outline:none;-webkit-appearance:none;
 }
-.inv-status-dot{
-  width:8px;height:8px;border-radius:50%;flex-shrink:0;
-}
-.dot-ok{background:#3D6B4F}
-.dot-low{background:#E8A030}
-.dot-out{background:#C0392B}
-
-/* Dashboard */
-.inv-stats-grid{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:10px;margin-bottom:20px;
-}
-.inv-stat-card{
-  background:var(--surface);border:1px solid var(--cream-dark);
-  border-radius:var(--radius-sm);padding:14px;
-}
-.inv-stat-label{font-size:11px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;color:var(--brown-light);margin-bottom:6px}
+.inv-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:#3D6B4F}.dot-low{background:#E8A030}.dot-out{background:#C0392B}.dot-none{background:#ccc}
+.inv-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.inv-stat-card{background:var(--surface);border:1px solid var(--cream-dark);border-radius:var(--radius-sm);padding:13px}
+.inv-stat-label{font-size:11px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;color:var(--brown-light);margin-bottom:5px}
 .inv-stat-value{font-size:26px;font-weight:600;color:var(--brown)}
-.inv-stat-value.danger{color:#C0392B}
-.inv-stat-value.warn{color:#E8A030}
+.inv-stat-value.danger{color:#C0392B}.inv-stat-value.warn{color:#E8A030}
 .inv-dashboard-item{
   background:var(--surface);border:1px solid var(--cream-dark);
-  border-radius:var(--radius-sm);padding:13px 14px;margin-bottom:8px;
-  display:flex;align-items:center;gap:12px;
+  border-radius:var(--radius-sm);padding:12px 13px;margin-bottom:7px;
+  display:flex;align-items:center;gap:11px;
 }
 .inv-bar-wrap{flex:1;min-width:0}
-.inv-bar-label{font-size:13px;font-weight:500;color:var(--brown);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center}
-.inv-bar-track{height:6px;background:var(--cream-dark);border-radius:3px;overflow:hidden}
+.inv-bar-label{font-size:13px;font-weight:500;color:var(--brown);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.inv-bar-track{height:5px;background:var(--cream-dark);border-radius:3px;overflow:hidden}
 .inv-bar-fill{height:100%;border-radius:3px;transition:width 0.4s}
-.fill-ok{background:var(--brand)}
-.fill-low{background:#E8A030}
-.fill-out{background:#C0392B}
-.inv-bar-counts{font-size:11px;color:var(--brown-light);margin-top:4px}
-
-/* History tab */
-.inv-history-row{
-  background:var(--surface);border:1px solid var(--cream-dark);
-  border-radius:var(--radius-sm);padding:13px 14px;margin-bottom:8px;
-}
-.inv-history-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.fill-ok{background:var(--brand)}.fill-low{background:#E8A030}.fill-out{background:#C0392B}
+.inv-bar-sub{font-size:11px;color:var(--brown-light);margin-top:3px}
+.inv-history-row{background:var(--surface);border:1px solid var(--cream-dark);border-radius:var(--radius-sm);padding:13px;margin-bottom:8px}
+.inv-history-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
 .inv-history-who{font-size:13px;font-weight:500;color:var(--brown)}
 .inv-history-time{font-size:12px;color:var(--brown-light)}
-.inv-history-items{font-size:12px;color:var(--brown-mid);line-height:1.6}
+.inv-history-body{font-size:12px;color:var(--brown-mid);line-height:1.6}
 .inv-alert-banner{
-  background:#FFF8EC;border:1px solid #F5C6A0;
-  border-radius:var(--radius-sm);padding:12px 14px;
-  margin-bottom:14px;font-size:13px;color:#8A5E00;
-  display:flex;gap:10px;align-items:flex-start;line-height:1.5;
+  background:#FFF8EC;border:1px solid #F5C6A0;border-radius:var(--radius-sm);
+  padding:11px 13px;margin-bottom:14px;font-size:13px;color:#8A5E00;
+  display:flex;gap:9px;align-items:flex-start;line-height:1.5;
 }
-
-/* Admin items management */
 .inv-admin-item-row{
   background:var(--surface);border:1px solid var(--cream-dark);
-  border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;
+  border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:7px;
   display:flex;align-items:center;gap:10px;
 }
-.inv-admin-item-row .inv-item-info{flex:1}
+/* ─── ORDER REPORT ───────────────────────────────────────── */
+.report-overlay{
+  position:fixed;inset:0;background:rgba(28,20,16,0.55);z-index:400;
+  display:flex;align-items:flex-end;
+}
+.report-sheet{
+  width:100%;background:var(--cream);border-radius:24px 24px 0 0;
+  padding:0 0 max(env(safe-area-inset-bottom),24px);
+  max-height:88vh;display:flex;flex-direction:column;
+}
+.report-handle{width:36px;height:4px;border-radius:2px;background:var(--cream-dark);margin:12px auto 0}
+.report-header{padding:14px 20px 12px;border-bottom:1px solid var(--cream-dark);display:flex;align-items:center;justify-content:space-between}
+.report-title{font-family:'Fraunces',serif;font-size:20px;font-weight:300;color:var(--brown)}
+.report-close{font-size:20px;color:var(--brown-light);padding:4px 8px}
+.report-body{padding:16px 20px;overflow-y:auto;flex:1}
+.report-section{margin-bottom:18px}
+.report-section-title{
+  font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;
+  color:var(--brand);margin-bottom:8px;padding-bottom:4px;
+  border-bottom:2px solid var(--brand-light);
+}
+.report-item-row{
+  display:flex;align-items:baseline;gap:10px;
+  padding:7px 0;border-bottom:1px solid var(--cream-dark);
+}
+.report-item-row:last-child{border-bottom:none}
+.report-item-name{font-size:14px;font-weight:500;color:var(--brown);flex:1}
+.report-item-qty{font-size:13px;color:var(--brown-light);white-space:nowrap;text-align:right}
+.report-item-note{font-size:11px;color:var(--brand-mid);white-space:nowrap}
+.report-ok-note{font-size:13px;color:var(--brand);font-style:italic;padding:4px 0}
+.report-footer{padding:14px 20px 0;display:flex;flex-direction:column;gap:8px}
+.report-copy-btn{
+  width:100%;background:var(--brand);color:#fff;border-radius:var(--radius-sm);
+  padding:14px;font-size:15px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.15s;
+}
+.report-copy-btn:active{transform:scale(0.98)}
+.report-copy-btn.copied{background:#2A8060}
+.report-sms-btn{
+  width:100%;background:var(--surface);color:var(--brown);
+  border:1px solid var(--cream-dark);border-radius:var(--radius-sm);
+  padding:13px;font-size:14px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
 </style>
 </head>
 <body>
@@ -1080,13 +1083,13 @@ a{color:inherit;text-decoration:none}
           <input type="date" class="form-input" id="invDate">
         </div>
       </div>
-      <div class="admin-section-title">Item quantities</div>
       <div id="invItemsList" class="inv-items-list"></div>
       <div class="form-group" style="margin-bottom:14px">
         <label class="form-label">Notes (optional)</label>
-        <textarea class="form-textarea" id="invNotes" placeholder="Issues, damaged items, shortages…" style="min-height:72px"></textarea>
+        <textarea class="form-textarea" id="invNotes" placeholder="Issues, damaged items, shortages…" style="min-height:68px"></textarea>
       </div>
       <button class="primary-btn" id="invSubmitBtn" onclick="submitInventoryCount()">Submit Count</button>
+      <button class="primary-btn" id="invReportBtn" onclick="openOrderReport()" style="background:var(--accent);margin-top:10px;display:none">📋 View Order Report</button>
     </div>
 
     <!-- DASHBOARD TAB -->
@@ -1094,7 +1097,6 @@ a{color:inherit;text-decoration:none}
       <div class="inv-stats-grid" id="invStatsGrid"></div>
       <div class="admin-section-title">Stock levels</div>
       <div id="invDashboardList"></div>
-      <!-- Admin: manage items -->
       <div id="invAdminSection" style="display:none">
         <div class="admin-section-title" style="margin-top:28px">Manage items</div>
         <div id="invAdminItemsList"></div>
@@ -1103,7 +1105,7 @@ a{color:inherit;text-decoration:none}
           <input type="hidden" id="invEditItemId">
           <div class="form-group">
             <label class="form-label">Item name *</label>
-            <input type="text" class="form-input" id="invItemName" placeholder="e.g. Açaí (kg)">
+            <input type="text" class="form-input" id="invItemName" placeholder="e.g. Açaí Base">
           </div>
           <div class="inv-meta-row">
             <div class="form-group">
@@ -1112,19 +1114,28 @@ a{color:inherit;text-decoration:none}
             </div>
             <div class="form-group">
               <label class="form-label">Min. stock</label>
-              <input type="number" class="form-input" id="invItemMin" placeholder="5" min="0">
+              <input type="number" class="form-input" id="invItemMin" placeholder="2" min="0" step="0.5">
             </div>
           </div>
           <div class="form-group">
             <label class="form-label">Category</label>
             <select class="form-select" id="invItemCategory">
-              <option value="produce">🥑 Produce</option>
-              <option value="dairy">🥛 Dairy</option>
-              <option value="dry">🌾 Dry goods</option>
-              <option value="frozen">🧊 Frozen</option>
-              <option value="packaging">📦 Packaging</option>
-              <option value="other">📋 Other</option>
+              <option value="bases">🫙 Bases</option>
+              <option value="milks_waters">🥛 Milks &amp; Waters</option>
+              <option value="butters_proteins">🥜 Butters &amp; Proteins</option>
+              <option value="crunch_drizzles">🍯 Crunch &amp; Drizzles</option>
+              <option value="frozen_fruit">🍓 Frozen Fruit</option>
+              <option value="supplies">📦 Supplies</option>
+              <option value="costco">🛒 Costco</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Distributor</label>
+            <input type="text" class="form-input" id="invItemDistributor" placeholder="Sunbelt, Costco, Amazon…">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Order note</label>
+            <input type="text" class="form-input" id="invItemOrderNote" placeholder="e.g. Buy 1 case">
           </div>
           <button class="primary-btn" id="invSaveItemBtn" onclick="saveInventoryItem()">Save Item</button>
           <button class="danger-btn" id="invCancelItemBtn" onclick="cancelEditItem()" style="display:none">Cancel edit</button>
@@ -1135,6 +1146,28 @@ a{color:inherit;text-decoration:none}
     <!-- HISTORY TAB -->
     <div id="invHistoryTab" style="display:none">
       <div id="invHistoryList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  ORDER REPORT OVERLAY                      -->
+<!-- ══════════════════════════════════════════ -->
+<div id="reportOverlay" class="report-overlay" style="display:none" onclick="closeReportIfBg(event)">
+  <div class="report-sheet">
+    <div class="report-handle"></div>
+    <div class="report-header">
+      <div class="report-title">Order report</div>
+      <button class="report-close" onclick="closeOrderReport()">✕</button>
+    </div>
+    <div class="report-body" id="reportBody"></div>
+    <div class="report-footer">
+      <button class="report-copy-btn" id="reportCopyBtn" onclick="copyOrderReport()">
+        📋 Copy to clipboard
+      </button>
+      <button class="report-sms-btn" onclick="smsOrderReport()">
+        💬 Open in Messages
+      </button>
     </div>
   </div>
 </div>
@@ -1716,42 +1749,37 @@ function showToast(msg) {
 }
 
 // ══════════════════════════════════════════════════════════
-//  KEYBOARD: close detail on back gesture
+//  KEYBOARD
 // ══════════════════════════════════════════════════════════
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closeDetail();
-    closeCatScreen();
-    closeInventory();
-  }
+  if (e.key === 'Escape') { closeDetail(); closeCatScreen(); closeInventory(); closeOrderReport(); }
 });
 
 // ══════════════════════════════════════════════════════════
 //  INVENTORY MODULE
 // ══════════════════════════════════════════════════════════
-let invItems = [];       // items from inventory_items table
-let invCounts = [];      // latest count per item
-let invCurrentTab = 'count';
+let invItems  = [];
+let invCounts = [];   // latest count per item_id
 
-const INV_CATEGORIES = {
-  produce:   { label:'Produce',   emoji:'🥑' },
-  dairy:     { label:'Dairy',     emoji:'🥛' },
-  dry:       { label:'Dry goods', emoji:'🌾' },
-  frozen:    { label:'Frozen',    emoji:'🧊' },
-  packaging: { label:'Packaging', emoji:'📦' },
-  other:     { label:'Other',     emoji:'📋' },
+const INV_CATS = {
+  bases:            { label:'Bases',             emoji:'🫙' },
+  milks_waters:     { label:'Milks & Waters',    emoji:'🥛' },
+  butters_proteins: { label:'Butters & Proteins',emoji:'🥜' },
+  crunch_drizzles:  { label:'Crunch & Drizzles', emoji:'🍯' },
+  frozen_fruit:     { label:'Frozen Fruit',      emoji:'🍓' },
+  supplies:         { label:'Supplies',          emoji:'📦' },
+  costco:           { label:'Costco',            emoji:'🛒' },
+  other:            { label:'Other',             emoji:'📋' },
 };
 
 async function openInventory(btn) {
   if (btn) setActiveNav(btn);
-  // Set today's date
   document.getElementById('invDate').value = new Date().toISOString().split('T')[0];
-  // Pre-fill staff name from user email
   if (currentUser) {
     const stored = localStorage.getItem('tb_inv_staff_' + currentUser.id);
     if (stored) document.getElementById('invStaffName').value = stored;
   }
-  await loadInvItems();
+  await loadInvData();
   renderInvCountTab();
   if (isAdmin) {
     document.getElementById('invAdminSection').style.display = 'block';
@@ -1762,59 +1790,52 @@ async function openInventory(btn) {
 
 function closeInventory() {
   document.getElementById('screen-inventory').classList.remove('open');
-  // reset nav active state back to home
   document.querySelectorAll('.nav-item').forEach((n,i) => n.classList.toggle('active', i===0));
 }
 
 function switchInvTab(tab, btn) {
-  invCurrentTab = tab;
   document.querySelectorAll('.inv-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('invCountTab').style.display     = tab === 'count'     ? 'block' : 'none';
-  document.getElementById('invDashboardTab').style.display = tab === 'dashboard' ? 'block' : 'none';
-  document.getElementById('invHistoryTab').style.display   = tab === 'history'   ? 'block' : 'none';
-  if (tab === 'dashboard') renderInvDashboard();
-  if (tab === 'history')   loadInvHistory();
+  document.getElementById('invCountTab').style.display     = tab==='count'     ? 'block':'none';
+  document.getElementById('invDashboardTab').style.display = tab==='dashboard' ? 'block':'none';
+  document.getElementById('invHistoryTab').style.display   = tab==='history'   ? 'block':'none';
+  if (tab==='dashboard') renderInvDashboard();
+  if (tab==='history')   loadInvHistory();
 }
 
 // ── DATA ──────────────────────────────────────────────────
-async function loadInvItems() {
-  const { data, error } = await sb.from('inventory_items')
-    .select('*').eq('active', true).order('category').order('name');
-  if (!error && data) invItems = data;
+async function loadInvData() {
+  const { data: items } = await sb.from('inventory_items')
+    .select('*').eq('active',true).order('sort_order').order('name');
+  if (items) invItems = items;
 
-  // Load latest count per item
-  if (invItems.length) {
-    const ids = invItems.map(i => i.id);
-    // Get the most recent count submission
-    const { data: latest } = await sb.from('inventory_counts')
-      .select('item_id, quantity, submitted_at')
-      .in('item_id', ids)
-      .order('submitted_at', { ascending: false });
-    // Keep only the latest count per item
-    const seen = new Set();
-    invCounts = [];
-    if (latest) {
-      for (const row of latest) {
-        if (!seen.has(row.item_id)) {
-          seen.add(row.item_id);
-          invCounts.push(row);
-        }
-      }
+  if (!invItems.length) return;
+  const ids = invItems.map(i => i.id);
+  const { data: counts } = await sb.from('inventory_counts')
+    .select('item_id,quantity,submitted_at')
+    .in('item_id', ids)
+    .order('submitted_at', { ascending:false })
+    .limit(invItems.length * 5);
+
+  const seen = new Set();
+  invCounts = [];
+  if (counts) {
+    for (const r of counts) {
+      if (!seen.has(r.item_id)) { seen.add(r.item_id); invCounts.push(r); }
     }
   }
 }
 
-function getLatestCount(itemId) {
-  const row = invCounts.find(c => c.item_id === itemId);
-  return row ? row.quantity : null;
+function getQty(itemId) {
+  const r = invCounts.find(c => c.item_id === itemId);
+  return r !== undefined ? r.quantity : null;
 }
 
-function getStockStatus(item) {
-  const qty = getLatestCount(item.id);
-  if (qty === null) return 'unknown';
-  if (qty === 0) return 'out';
-  if (qty <= item.min_stock) return 'low';
+function getStatus(item) {
+  const q = getQty(item.id);
+  if (q === null) return 'none';
+  if (q === 0) return 'out';
+  if (parseFloat(q) <= parseFloat(item.min_stock)) return 'low';
   return 'ok';
 }
 
@@ -1822,42 +1843,42 @@ function getStockStatus(item) {
 function renderInvCountTab() {
   const el = document.getElementById('invItemsList');
   if (!invItems.length) {
-    el.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">📦</div>
-      <div class="empty-title">No items set up yet</div>
-      <div class="empty-sub">${isAdmin ? 'Use the Dashboard tab to add items.' : 'Ask an admin to add inventory items.'}</div>
-    </div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div>
+      <div class="empty-title">No items yet</div>
+      <div class="empty-sub">${isAdmin ? 'Use Dashboard → Manage items to add them.' : 'Ask an admin to add inventory items.'}</div></div>`;
+    document.getElementById('invReportBtn').style.display = 'none';
     return;
   }
 
-  // Group by category
   const grouped = {};
   invItems.forEach(item => {
     if (!grouped[item.category]) grouped[item.category] = [];
     grouped[item.category].push(item);
   });
 
+  const catOrder = ['bases','milks_waters','butters_proteins','crunch_drizzles','frozen_fruit','supplies','costco','other'];
   let html = '';
-  Object.keys(grouped).forEach(cat => {
-    const info = INV_CATEGORIES[cat] || { label: cat, emoji:'📋' };
-    html += `<div class="admin-section-title">${info.emoji} ${info.label}</div>`;
+  catOrder.forEach(cat => {
+    if (!grouped[cat]) return;
+    const info = INV_CATS[cat] || { label:cat, emoji:'📋' };
+    html += `<div class="admin-section-title" style="margin-top:16px">${info.emoji} ${info.label}</div>`;
     grouped[cat].forEach(item => {
-      const lastQty = getLatestCount(item.id);
-      const status = getStockStatus(item);
-      const rowClass = status === 'out' ? 'out-of-stock' : status === 'low' ? 'low-stock' : '';
-      const dotClass = status === 'out' ? 'dot-out' : status === 'low' ? 'dot-low' : 'dot-ok';
-      const displayQty = lastQty !== null ? lastQty : '';
-      html += `<div class="inv-item-row ${rowClass}">
-        <div class="inv-status-dot ${dotClass}"></div>
+      const lastQty = getQty(item.id);
+      const status  = getStatus(item);
+      const rowCls  = status==='out' ? 'out-of-stock' : status==='low' ? 'low-stock' : '';
+      const dotCls  = status==='out' ? 'dot-out' : status==='low' ? 'dot-low' : status==='ok' ? 'dot-ok' : 'dot-none';
+      const val     = lastQty !== null ? lastQty : '';
+      const sub     = [item.distributor, item.unit].filter(Boolean).join(' · ');
+      html += `<div class="inv-item-row ${rowCls}">
+        <div class="inv-status-dot ${dotCls}"></div>
         <div class="inv-item-info">
           <div class="inv-item-name">${escHtml(item.name)}</div>
-          <div class="inv-item-unit">${escHtml(item.unit || '')}</div>
-          ${item.min_stock ? `<div class="inv-item-min">Min: ${item.min_stock}</div>` : ''}
+          ${sub ? `<div class="inv-item-sub">${escHtml(sub)}${item.min_stock ? ' · min '+item.min_stock : ''}</div>` : ''}
         </div>
         <div class="inv-qty-wrap">
-          <button class="inv-qty-btn" onclick="adjustQty('inv_qty_${item.id}',-1)">−</button>
-          <input class="inv-qty-input" type="number" id="inv_qty_${item.id}" value="${displayQty}" min="0" placeholder="0">
-          <button class="inv-qty-btn" onclick="adjustQty('inv_qty_${item.id}',1)">+</button>
+          <button class="inv-qty-btn" onclick="adjustQty('iq_${item.id}',-1)">−</button>
+          <input class="inv-qty-input" type="number" id="iq_${item.id}" value="${val}" min="0" step="0.5" placeholder="0">
+          <button class="inv-qty-btn" onclick="adjustQty('iq_${item.id}',1)">+</button>
         </div>
       </div>`;
     });
@@ -1865,24 +1886,20 @@ function renderInvCountTab() {
 
   el.innerHTML = html;
   updateAlertBanner();
+  document.getElementById('invReportBtn').style.display = invCounts.length ? 'block' : 'none';
 }
 
 function adjustQty(inputId, delta) {
-  const input = document.getElementById(inputId);
-  const current = parseFloat(input.value) || 0;
-  input.value = Math.max(0, current + delta);
+  const inp = document.getElementById(inputId);
+  inp.value = Math.max(0, (parseFloat(inp.value)||0) + delta);
 }
 
 function updateAlertBanner() {
-  const lowItems = invItems.filter(i => {
-    const s = getStockStatus(i);
-    return s === 'low' || s === 'out';
-  });
+  const low = invItems.filter(i => { const s=getStatus(i); return s==='low'||s==='out'; });
   const banner = document.getElementById('invAlertBanner');
-  if (lowItems.length) {
-    const names = lowItems.map(i => i.name).join(', ');
+  if (low.length) {
     document.getElementById('invAlertText').textContent =
-      lowItems.length + ' item(s) at or below minimum stock: ' + names;
+      low.length + ' item' + (low.length>1?'s':'') + ' at or below minimum: ' + low.map(i=>i.name).join(', ');
     banner.style.display = 'flex';
   } else {
     banner.style.display = 'none';
@@ -1890,108 +1907,66 @@ function updateAlertBanner() {
 }
 
 async function submitInventoryCount() {
-  const staffName = document.getElementById('invStaffName').value.trim();
-  const dateVal   = document.getElementById('invDate').value;
-  const notes     = document.getElementById('invNotes').value.trim();
-
-  if (!staffName) { showToast('Please enter your name'); return; }
-  if (!dateVal)   { showToast('Please select a date'); return; }
+  const staff = document.getElementById('invStaffName').value.trim();
+  const date  = document.getElementById('invDate').value;
+  const notes = document.getElementById('invNotes').value.trim();
+  if (!staff) { showToast('Please enter your name'); return; }
+  if (!date)  { showToast('Please select a date'); return; }
   if (!invItems.length) { showToast('No items to count'); return; }
-
-  // Save staff name for next time
-  if (currentUser) localStorage.setItem('tb_inv_staff_' + currentUser.id, staffName);
+  if (currentUser) localStorage.setItem('tb_inv_staff_'+currentUser.id, staff);
 
   const btn = document.getElementById('invSubmitBtn');
-  btn.disabled = true; btn.textContent = 'Submitting…';
+  btn.disabled=true; btn.textContent='Submitting…';
 
-  const submittedAt = new Date(dateVal + 'T' + new Date().toTimeString().slice(0,8)).toISOString();
-  const submissionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+  const submittedAt  = new Date(date+'T'+new Date().toTimeString().slice(0,8)).toISOString();
+  const submissionId = (typeof crypto!=='undefined'&&crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString();
 
-  // Build rows for each item that has a value
   const rows = invItems.map(item => {
-    const input = document.getElementById('inv_qty_' + item.id);
-    const qty = input ? (parseFloat(input.value) || 0) : 0;
-    return {
-      item_id: item.id,
-      quantity: qty,
-      staff_name: staffName,
-      submitted_at: submittedAt,
-      submission_id: submissionId,
-      notes: notes || null,
-    };
+    const inp = document.getElementById('iq_'+item.id);
+    return { item_id:item.id, quantity:parseFloat(inp?.value)||0, staff_name:staff, submitted_at:submittedAt, submission_id:submissionId, notes:notes||null };
   });
 
   const { error } = await sb.from('inventory_counts').insert(rows);
-
-  btn.disabled = false; btn.textContent = 'Submit Count';
-
-  if (error) {
-    showToast('Error: ' + error.message);
-    return;
-  }
+  btn.disabled=false; btn.textContent='Submit Count';
+  if (error) { showToast('Error: '+error.message); return; }
 
   showToast('Count submitted! ✓');
   document.getElementById('invNotes').value = '';
-  await loadInvItems();   // refresh latest counts
-  renderInvCountTab();    // re-render with updated dots
+  await loadInvData();
+  renderInvCountTab();
+  document.getElementById('invReportBtn').style.display = 'block';
 }
 
-// ── DASHBOARD TAB ─────────────────────────────────────────
-async function renderInvDashboard() {
-  const total = invItems.length;
-  const outItems = invItems.filter(i => getStockStatus(i) === 'out');
-  const lowItems = invItems.filter(i => getStockStatus(i) === 'low');
-
+// ── DASHBOARD ─────────────────────────────────────────────
+function renderInvDashboard() {
+  const out  = invItems.filter(i=>getStatus(i)==='out').length;
+  const low  = invItems.filter(i=>getStatus(i)==='low').length;
+  const ok   = invItems.filter(i=>getStatus(i)==='ok').length;
   document.getElementById('invStatsGrid').innerHTML = `
-    <div class="inv-stat-card">
-      <div class="inv-stat-label">Total items</div>
-      <div class="inv-stat-value">${total}</div>
-    </div>
-    <div class="inv-stat-card">
-      <div class="inv-stat-label">Low stock</div>
-      <div class="inv-stat-value warn">${lowItems.length}</div>
-    </div>
-    <div class="inv-stat-card">
-      <div class="inv-stat-label">Out of stock</div>
-      <div class="inv-stat-value danger">${outItems.length}</div>
-    </div>
-    <div class="inv-stat-card">
-      <div class="inv-stat-label">OK</div>
-      <div class="inv-stat-value">${invItems.filter(i => getStockStatus(i) === 'ok').length}</div>
-    </div>
-  `;
+    <div class="inv-stat-card"><div class="inv-stat-label">Total items</div><div class="inv-stat-value">${invItems.length}</div></div>
+    <div class="inv-stat-card"><div class="inv-stat-label">Out of stock</div><div class="inv-stat-value danger">${out}</div></div>
+    <div class="inv-stat-card"><div class="inv-stat-label">Low stock</div><div class="inv-stat-value warn">${low}</div></div>
+    <div class="inv-stat-card"><div class="inv-stat-label">Well stocked</div><div class="inv-stat-value">${ok}</div></div>`;
 
-  // Sort: out first, then low, then ok
-  const sorted = [...invItems].sort((a, b) => {
-    const order = { out:0, low:1, ok:2, unknown:3 };
-    return (order[getStockStatus(a)] || 3) - (order[getStockStatus(b)] || 3);
+  const sorted = [...invItems].sort((a,b) => {
+    const o={out:0,low:1,none:2,ok:3};
+    return (o[getStatus(a)]||2)-(o[getStatus(b)]||2);
   });
 
-  const listEl = document.getElementById('invDashboardList');
-  if (!sorted.length) {
-    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">No items yet</div></div>';
-    return;
-  }
-
-  listEl.innerHTML = sorted.map(item => {
-    const qty = getLatestCount(item.id);
-    const status = getStockStatus(item);
-    const dotClass = status === 'out' ? 'dot-out' : status === 'low' ? 'dot-low' : 'dot-ok';
-    const fillClass = status === 'out' ? 'fill-out' : status === 'low' ? 'fill-low' : 'fill-ok';
-    const maxVal = Math.max(item.min_stock * 3, qty || 0, 1);
-    const pct = qty !== null ? Math.min(100, Math.round((qty / maxVal) * 100)) : 0;
-    const qtyLabel = qty !== null ? qty + (item.unit ? ' ' + item.unit : '') : 'not counted';
+  document.getElementById('invDashboardList').innerHTML = sorted.map(item => {
+    const qty    = getQty(item.id);
+    const status = getStatus(item);
+    const dotCls = status==='out'?'dot-out':status==='low'?'dot-low':status==='ok'?'dot-ok':'dot-none';
+    const fillCls= status==='out'?'fill-out':status==='low'?'fill-low':'fill-ok';
+    const max    = Math.max(parseFloat(item.min_stock)*3, qty||0, 1);
+    const pct    = qty!==null ? Math.min(100,Math.round((qty/max)*100)) : 0;
+    const qLabel = qty!==null ? qty+(item.unit?' '+item.unit:'') : 'not counted';
     return `<div class="inv-dashboard-item">
-      <div class="inv-status-dot ${dotClass}"></div>
+      <div class="inv-status-dot ${dotCls}"></div>
       <div class="inv-bar-wrap">
-        <div class="inv-bar-label">
-          <span>${escHtml(item.name)}</span>
-          <span style="font-size:12px;color:var(--brown-light)">${escHtml(qtyLabel)}</span>
-        </div>
-        <div class="inv-bar-track">
-          <div class="inv-bar-fill ${fillClass}" style="width:${pct}%"></div>
-        </div>
-        ${item.min_stock ? `<div class="inv-bar-counts">Min: ${item.min_stock}${item.unit ? ' ' + item.unit : ''}</div>` : ''}
+        <div class="inv-bar-label"><span>${escHtml(item.name)}</span><span style="font-size:12px;color:var(--brown-light)">${qLabel}</span></div>
+        <div class="inv-bar-track"><div class="inv-bar-fill ${fillCls}" style="width:${pct}%"></div></div>
+        ${item.min_stock?`<div class="inv-bar-sub">Min: ${item.min_stock}${item.unit?' '+item.unit:''} · ${escHtml(item.distributor||'')}</div>`:''}
       </div>
     </div>`;
   }).join('');
@@ -1999,78 +1974,57 @@ async function renderInvDashboard() {
   if (isAdmin) renderInvAdminItems();
 }
 
-// ── HISTORY TAB ───────────────────────────────────────────
+// ── HISTORY ───────────────────────────────────────────────
 async function loadInvHistory() {
   const el = document.getElementById('invHistoryList');
   el.innerHTML = '<div style="color:var(--brown-light);font-size:13px;padding:8px 0">Loading…</div>';
-
-  // Get last 20 distinct submission_ids
   const { data, error } = await sb.from('inventory_counts')
-    .select('submission_id, staff_name, submitted_at, notes, item_id, quantity')
-    .order('submitted_at', { ascending: false })
-    .limit(200);
+    .select('submission_id,staff_name,submitted_at,notes,item_id,quantity')
+    .order('submitted_at',{ascending:false}).limit(300);
+  if (error||!data) { el.innerHTML='<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">No history yet</div></div>'; return; }
 
-  if (error || !data) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">No history yet</div></div>'; return; }
-
-  // Group by submission_id
-  const submissions = {};
-  data.forEach(row => {
-    if (!submissions[row.submission_id]) {
-      submissions[row.submission_id] = {
-        staff_name: row.staff_name,
-        submitted_at: row.submitted_at,
-        notes: row.notes,
-        items: [],
-      };
-    }
-    const item = invItems.find(i => i.id === row.item_id);
-    if (item) submissions[row.submission_id].items.push({ name: item.name, unit: item.unit, qty: row.quantity, min: item.min_stock });
+  const subs = {};
+  data.forEach(r => {
+    if (!subs[r.submission_id]) subs[r.submission_id]={staff_name:r.staff_name,submitted_at:r.submitted_at,notes:r.notes,items:[]};
+    const item=invItems.find(i=>i.id===r.item_id);
+    if (item) subs[r.submission_id].items.push({name:item.name,unit:item.unit,qty:r.quantity,min:item.min_stock});
   });
 
-  const submKeys = Object.keys(submissions).slice(0, 20);
-  if (!submKeys.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">No submissions yet</div><div class="empty-sub">Submit your first count using the Count tab</div></div>';
-    return;
-  }
+  const keys=Object.keys(subs).slice(0,25);
+  if (!keys.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">No submissions yet</div></div>'; return; }
 
-  el.innerHTML = submKeys.map(sid => {
-    const s = submissions[sid];
-    const lowFlag = s.items.filter(i => i.min && i.qty <= i.min).map(i => i.name);
-    const itemsHtml = s.items.map(i => {
-      const isLow = i.min && i.qty <= i.min;
-      return `<span style="${isLow ? 'color:#C0392B;font-weight:500' : ''}">${escHtml(i.name)}: ${i.qty}${i.unit ? ' ' + i.unit : ''}</span>`;
-    }).join(' · ');
+  el.innerHTML = keys.map(sid => {
+    const s=subs[sid];
+    const lowItems=s.items.filter(i=>i.min&&parseFloat(i.qty)<=parseFloat(i.min));
+    const itemLine=s.items.map(i=>`${i.name}: ${i.qty}`).join(' · ');
     return `<div class="inv-history-row">
       <div class="inv-history-top">
-        <span class="inv-history-who">${escHtml(s.staff_name || 'Unknown')}</span>
+        <span class="inv-history-who">${escHtml(s.staff_name||'Unknown')}</span>
         <span class="inv-history-time">${timeAgo(s.submitted_at)}</span>
       </div>
-      <div class="inv-history-items">${itemsHtml}</div>
-      ${s.notes ? `<div style="font-size:12px;color:var(--brown-mid);margin-top:5px;font-style:italic">${escHtml(s.notes)}</div>` : ''}
-      ${lowFlag.length ? `<div style="font-size:11px;color:#C0392B;margin-top:4px">⚠️ Low: ${lowFlag.join(', ')}</div>` : ''}
+      <div class="inv-history-body">${escHtml(itemLine)}</div>
+      ${s.notes?`<div style="font-size:12px;color:var(--brown-mid);margin-top:5px;font-style:italic">${escHtml(s.notes)}</div>`:''}
+      ${lowItems.length?`<div style="font-size:11px;color:#C0392B;margin-top:4px;font-weight:500">⚠️ Low: ${lowItems.map(i=>i.name).join(', ')}</div>`:''}
     </div>`;
   }).join('');
 }
 
-// ── ADMIN: ITEMS MANAGEMENT ───────────────────────────────
+// ── ADMIN: ITEM MANAGEMENT ────────────────────────────────
 function renderInvAdminItems() {
-  const el = document.getElementById('invAdminItemsList');
+  const el=document.getElementById('invAdminItemsList');
   if (!el) return;
-  if (!invItems.length) {
-    el.innerHTML = '<div style="color:var(--brown-light);font-size:13px;padding:4px 0 8px">No items yet. Add the first one below.</div>';
-    return;
-  }
-  el.innerHTML = invItems.map(item => {
-    const info = INV_CATEGORIES[item.category] || { emoji:'📋' };
+  if (!invItems.length) { el.innerHTML='<div style="color:var(--brown-light);font-size:13px;padding:4px 0 8px">No items yet.</div>'; return; }
+  el.innerHTML=invItems.map(item=>{
+    const info=INV_CATS[item.category]||{emoji:'📋'};
     return `<div class="inv-admin-item-row">
-      <span style="font-size:20px">${info.emoji}</span>
+      <span style="font-size:18px">${info.emoji}</span>
       <div class="inv-item-info">
         <div class="inv-item-name">${escHtml(item.name)}</div>
-        <div class="inv-item-unit">${escHtml(item.unit || '')} · min: ${item.min_stock || 0}</div>
+        <div class="inv-item-sub">${escHtml(item.distributor||'')}${item.min_stock?' · min '+item.min_stock:''}</div>
       </div>
       <div style="display:flex;gap:6px">
-        <button class="edit-btn" onclick="editInventoryItem(${item.id})">Edit</button>
-        <button class="delete-btn" onclick="deleteInventoryItem(${item.id},'${escHtml(item.name)}')">Del</button>
+        <button class="edit-btn" onclick="editInvItem(${item.id})">Edit</button>
+        <button class="delete-btn" onclick="delInvItem(${item.id},'${escHtml(item.name)}')">Del</button>
       </div>
     </div>`;
   }).join('');
@@ -2079,64 +2033,176 @@ function renderInvAdminItems() {
 async function saveInventoryItem() {
   const id   = document.getElementById('invEditItemId').value;
   const name = document.getElementById('invItemName').value.trim();
-  const unit = document.getElementById('invItemUnit').value.trim();
-  const min  = parseInt(document.getElementById('invItemMin').value) || 0;
-  const cat  = document.getElementById('invItemCategory').value;
-
-  if (!name) { showToast('Item name is required'); return; }
-
+  if (!name) { showToast('Item name required'); return; }
   const btn = document.getElementById('invSaveItemBtn');
-  btn.disabled = true; btn.textContent = 'Saving…';
-
-  const payload = { name, unit, min_stock: min, category: cat, active: true };
+  btn.disabled=true; btn.textContent='Saving…';
+  const payload={
+    name, unit:document.getElementById('invItemUnit').value.trim(),
+    min_stock:parseFloat(document.getElementById('invItemMin').value)||0,
+    category:document.getElementById('invItemCategory').value,
+    distributor:document.getElementById('invItemDistributor').value.trim(),
+    order_note:document.getElementById('invItemOrderNote').value.trim(),
+    active:true,
+  };
   let error;
-  if (id) {
-    ({ error } = await sb.from('inventory_items').update(payload).eq('id', id));
-  } else {
-    ({ error } = await sb.from('inventory_items').insert({ ...payload, created_at: new Date().toISOString() }));
-  }
-
-  btn.disabled = false; btn.textContent = 'Save Item';
-
-  if (error) { showToast('Error: ' + error.message); return; }
-  showToast(id ? 'Item updated!' : 'Item added!');
+  if (id) { ({error}=await sb.from('inventory_items').update(payload).eq('id',id)); }
+  else    { ({error}=await sb.from('inventory_items').insert({...payload,created_at:new Date().toISOString()})); }
+  btn.disabled=false; btn.textContent='Save Item';
+  if (error) { showToast('Error: '+error.message); return; }
+  showToast(id?'Item updated!':'Item added!');
   cancelEditItem();
-  await loadInvItems();
-  renderInvAdminItems();
-  renderInvCountTab();
-  renderInvDashboard();
+  await loadInvData();
+  renderInvAdminItems(); renderInvCountTab(); renderInvDashboard();
 }
 
-async function editInventoryItem(id) {
-  const item = invItems.find(i => i.id === id);
-  if (!item) return;
-  document.getElementById('invEditItemId').value    = item.id;
-  document.getElementById('invItemName').value      = item.name || '';
-  document.getElementById('invItemUnit').value      = item.unit || '';
-  document.getElementById('invItemMin').value       = item.min_stock || '';
-  document.getElementById('invItemCategory').value  = item.category || 'other';
-  document.getElementById('invCancelItemBtn').style.display = 'block';
-  document.getElementById('invSaveItemBtn').textContent = 'Update Item';
-  document.getElementById('invSaveItemBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+async function editInvItem(id) {
+  const item=invItems.find(i=>i.id===id); if(!item) return;
+  document.getElementById('invEditItemId').value       = item.id;
+  document.getElementById('invItemName').value         = item.name||'';
+  document.getElementById('invItemUnit').value         = item.unit||'';
+  document.getElementById('invItemMin').value          = item.min_stock||'';
+  document.getElementById('invItemCategory').value     = item.category||'other';
+  document.getElementById('invItemDistributor').value  = item.distributor||'';
+  document.getElementById('invItemOrderNote').value    = item.order_note||'';
+  document.getElementById('invCancelItemBtn').style.display='block';
+  document.getElementById('invSaveItemBtn').textContent='Update Item';
+  document.getElementById('invSaveItemBtn').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function cancelEditItem() {
-  document.getElementById('invEditItemId').value    = '';
-  document.getElementById('invItemName').value      = '';
-  document.getElementById('invItemUnit').value      = '';
-  document.getElementById('invItemMin').value       = '';
-  document.getElementById('invItemCategory').value  = 'produce';
-  document.getElementById('invCancelItemBtn').style.display = 'none';
-  document.getElementById('invSaveItemBtn').textContent = 'Save Item';
+  ['invEditItemId','invItemName','invItemUnit','invItemMin','invItemDistributor','invItemOrderNote']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('invItemCategory').value='bases';
+  document.getElementById('invCancelItemBtn').style.display='none';
+  document.getElementById('invSaveItemBtn').textContent='Save Item';
 }
 
-async function deleteInventoryItem(id, name) {
-  if (!confirm(`Remove "${name}" from inventory? This won't delete historical counts.`)) return;
-  await sb.from('inventory_items').update({ active: false }).eq('id', id);
+async function delInvItem(id,name) {
+  if(!confirm(`Remove "${name}"?`)) return;
+  await sb.from('inventory_items').update({active:false}).eq('id',id);
   showToast('Item removed');
-  await loadInvItems();
-  renderInvAdminItems();
-  renderInvCountTab();
+  await loadInvData(); renderInvAdminItems(); renderInvCountTab();
+}
+
+// ══════════════════════════════════════════════════════════
+//  ORDER REPORT
+// ══════════════════════════════════════════════════════════
+function buildOrderReport() {
+  // Items that need ordering: qty <= min_stock (out or low)
+  // Group by distributor for clarity
+  const needsOrder = invItems.filter(i => {
+    const s = getStatus(i);
+    return s === 'out' || s === 'low';
+  });
+
+  // Group by distributor
+  const byDist = {};
+  needsOrder.forEach(item => {
+    const dist = item.distributor || 'Other';
+    if (!byDist[dist]) byDist[dist] = [];
+    byDist[dist].push(item);
+  });
+
+  return { needsOrder, byDist };
+}
+
+function openOrderReport() {
+  const { needsOrder, byDist } = buildOrderReport();
+  const date = document.getElementById('invDate').value || new Date().toISOString().split('T')[0];
+  const staff = document.getElementById('invStaffName').value.trim() || 'Staff';
+
+  let html = '';
+
+  if (!needsOrder.length) {
+    html = `<div style="text-align:center;padding:24px 0">
+      <div style="font-size:40px;margin-bottom:10px">✅</div>
+      <div style="font-size:15px;font-weight:500;color:var(--brand)">All stocked up!</div>
+      <div style="font-size:13px;color:var(--brown-light);margin-top:4px">Nothing needs ordering right now.</div>
+    </div>`;
+  } else {
+    // Sort distributors — put Costco first if present
+    const dists = Object.keys(byDist).sort((a,b) => a==='Costco'?-1:b==='Costco'?1:a.localeCompare(b));
+    dists.forEach(dist => {
+      const items = byDist[dist];
+      html += `<div class="report-section">
+        <div class="report-section-title">${dist} <span style="font-weight:400;color:var(--brown-light)">(${items.length})</span></div>`;
+      items.forEach(item => {
+        const qty    = getQty(item.id);
+        const status = getStatus(item);
+        const color  = status==='out' ? '#C0392B' : '#E8A030';
+        const label  = status==='out' ? 'OUT' : 'LOW';
+        html += `<div class="report-item-row">
+          <div>
+            <div class="report-item-name">${escHtml(item.name)}</div>
+            ${item.order_note ? `<div style="font-size:11px;color:var(--brand-mid)">${escHtml(item.order_note)}</div>` : ''}
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:12px;font-weight:600;color:${color}">${label}</div>
+            <div style="font-size:11px;color:var(--brown-light)">${qty!==null?qty+'/'+item.min_stock:'?/'+item.min_stock}</div>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    });
+  }
+
+  document.getElementById('reportBody').innerHTML = html;
+  document.getElementById('reportCopyBtn').textContent = '📋 Copy to clipboard';
+  document.getElementById('reportCopyBtn').classList.remove('copied');
+  document.getElementById('reportOverlay').style.display = 'flex';
+}
+
+function closeOrderReport() {
+  document.getElementById('reportOverlay').style.display = 'none';
+}
+
+function closeReportIfBg(e) {
+  if (e.target === document.getElementById('reportOverlay')) closeOrderReport();
+}
+
+function buildReportText() {
+  const { needsOrder, byDist } = buildOrderReport();
+  const date  = document.getElementById('invDate').value || new Date().toISOString().split('T')[0];
+  const staff = document.getElementById('invStaffName').value.trim() || 'Staff';
+
+  if (!needsOrder.length) {
+    return `BOA BOWLS — ${date}\nAll items stocked ✅\n— ${staff}`;
+  }
+
+  const dists = Object.keys(byDist).sort((a,b) => a==='Costco'?-1:b==='Costco'?1:a.localeCompare(b));
+  let lines = [`BOA BOWLS ORDER — ${date}`];
+
+  dists.forEach(dist => {
+    lines.push(`\n${dist.toUpperCase()}:`);
+    byDist[dist].forEach(item => {
+      const qty   = getQty(item.id);
+      const flag  = getStatus(item)==='out' ? '🔴' : '🟡';
+      const stock = qty!==null ? `${qty}/${item.min_stock}` : `?/${item.min_stock}`;
+      const note  = item.order_note ? ` — ${item.order_note}` : '';
+      lines.push(`${flag} ${item.name} (${stock})${note}`);
+    });
+  });
+
+  lines.push(`\n— ${staff}`);
+  return lines.join('\n');
+}
+
+async function copyOrderReport() {
+  const text = buildReportText();
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById('reportCopyBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent='📋 Copy to clipboard'; btn.classList.remove('copied'); }, 2500);
+  } catch(e) {
+    showToast('Could not copy — try selecting text manually');
+  }
+}
+
+function smsOrderReport() {
+  const text = buildReportText();
+  window.location.href = 'sms:?&body=' + encodeURIComponent(text);
 }
 
 // ══════════════════════════════════════════════════════════
