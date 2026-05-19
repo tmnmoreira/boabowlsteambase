@@ -668,6 +668,26 @@ a{color:inherit;text-decoration:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-overlay.fade-out{opacity:0;pointer-events:none}
 
+.subcat-pills{
+  display:flex;gap:8px;
+  padding:12px 0 14px;
+  overflow-x:auto;scrollbar-width:none;
+  flex-wrap:nowrap;
+}
+.subcat-pills::-webkit-scrollbar{display:none}
+.subcat-pill{
+  flex-shrink:0;
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:13px;font-weight:500;
+  background:var(--surface);
+  color:var(--brown-mid);
+  border:1px solid var(--cream-dark);
+  transition:all 0.15s;
+  white-space:nowrap;
+}
+.subcat-pill.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+
 .subcat-sep{opacity:0.5;margin:0 3px;font-weight:400}
 
 .inline-step-img{
@@ -1024,7 +1044,7 @@ a{color:inherit;text-decoration:none}
       </div>
       <div class="form-group">
         <label class="form-label">Category *</label>
-        <select class="form-select" id="fCategory">
+        <select class="form-select" id="fCategory" onchange="updateSubcategoryOptions()">
           <option value="">Select category…</option>
           <option value="recipes">🍓 Recipes</option>
           <option value="procedures">📋 Procedures</option>
@@ -1038,9 +1058,11 @@ a{color:inherit;text-decoration:none}
         <label class="form-label">Summary (shown in card preview)</label>
         <input type="text" class="form-input" id="fSummary" placeholder="One-line description…">
       </div>
-      <div class="form-group">
+      <div class="form-group" id="fSubcategoryGroup">
         <label class="form-label">Subcategory (optional)</label>
-        <input type="text" class="form-input" id="fSubcategory" placeholder="e.g. 🫙 Açaí Bowls">
+        <select class="form-select" id="fSubcategory">
+          <option value="">None</option>
+        </select>
       </div>
       <div class="form-group">
         <label class="form-label">Content *</label>
@@ -1237,12 +1259,21 @@ let currentCategory = 'all';
 let bookmarks = JSON.parse(localStorage.getItem('tb_bookmarks') || '[]');
 
 const CATEGORIES = {
-  recipes:        { label:'Recipes',        emoji:'🍓' },
+  recipes:        { label:'Recipes',        emoji:'🍽️' },
   procedures:     { label:'Procedures',     emoji:'📋' },
   training:       { label:'Training',       emoji:'🎓' },
   troubleshooting:{ label:'Troubleshooting',emoji:'🔧' },
   safety:         { label:'Safety',         emoji:'⚠️' },
   hr:             { label:'HR & Policies',  emoji:'👥' },
+};
+
+const SUBCATEGORIES = {
+  recipes: [
+    { value:'🥣 Bowls',      label:'🥣 Bowls' },
+    { value:'🥤 Smoothies',  label:'🥤 Smoothies' },
+    { value:'🍞 Bites',      label:'🍞 Bites' },
+    { value:'☕️ Coffee & Tea', label:'☕️ Coffee & Tea' },
+  ],
 };
 
 // ══════════════════════════════════════════════════════════
@@ -1510,23 +1541,60 @@ async function renderContent(text) {
 }
 
 // ══════════════════════════════════════════════════════════
+//  SUBCATEGORY DROPDOWN HELPER
+// ══════════════════════════════════════════════════════════
+function updateSubcategoryOptions(currentValue) {
+  const cat = document.getElementById('fCategory').value;
+  const sel = document.getElementById('fSubcategory');
+  const subs = SUBCATEGORIES[cat] || [];
+  sel.innerHTML = '<option value="">None</option>' +
+    subs.map(s => `<option value="${s.value}"${currentValue===s.value?' selected':''}>${s.label}</option>`).join('');
+  // If no subcategories defined for this cat, show a plain text input instead
+  if (!subs.length) {
+    sel.innerHTML = '<option value="">None</option>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
 //  CATEGORY SCREEN
 // ══════════════════════════════════════════════════════════
 function openCatScreen(cat) {
   const info = CATEGORIES[cat];
   document.getElementById('catScreenTitle').textContent = info.emoji + ' ' + info.label;
+
   const filtered = allArticles.filter(a => a.category === cat);
   const el = document.getElementById('catScreenList');
+
+  // Build subcategory pills if subcategories exist for this category
+  const subs = SUBCATEGORIES[cat] || [];
+  let pillsHtml = '';
+  if (subs.length) {
+    const usedSubs = subs.filter(s => filtered.some(a => a.subcategory === s.value));
+    if (usedSubs.length) {
+      pillsHtml = `<div class="subcat-pills" id="subcatPills">
+        <button class="subcat-pill active" onclick="filterSubcat(null,this,'${cat}')">All</button>
+        ${usedSubs.map(s => `<button class="subcat-pill" onclick="filterSubcat('${s.value.replace(/'/g,"\\'")}',this,'${cat}')">${s.label}</button>`).join('')}
+      </div>`;
+    }
+  }
+
   if (!filtered.length) {
-    el.innerHTML = `<div class="empty-state">
+    el.innerHTML = `${pillsHtml}<div class="empty-state">
       <div class="empty-icon">${info.emoji}</div>
       <div class="empty-title">No ${info.label} articles yet</div>
       <div class="empty-sub">${isAdmin ? 'Use the admin panel to add the first one.' : 'Check back soon.'}</div>
     </div>`;
   } else {
-    el.innerHTML = filtered.map(a => articleCard(a)).join('');
+    el.innerHTML = pillsHtml + `<div id="subcatArticleList">${filtered.map(a => articleCard(a)).join('')}</div>`;
   }
   document.getElementById('screen-category').classList.add('open');
+}
+
+function filterSubcat(sub, btn, cat) {
+  document.querySelectorAll('#subcatPills .subcat-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = allArticles.filter(a => a.category === cat && (sub === null || a.subcategory === sub));
+  document.getElementById('subcatArticleList').innerHTML = filtered.map(a => articleCard(a)).join('');
 }
 
 function closeCatScreen() {
@@ -1667,8 +1735,9 @@ async function editArticle(id) {
   document.getElementById('fTitle').value       = a.title || '';
   document.getElementById('fCategory').value    = a.category || '';
   document.getElementById('fSummary').value     = a.summary || '';
-  document.getElementById('fSubcategory').value = a.subcategory || '';
   document.getElementById('fContent').value     = a.content || '';
+  updateSubcategoryOptions(a.subcategory || '');
+  document.getElementById('fSubcategory').value = a.subcategory || '';
   document.getElementById('fPinned').value   = a.is_pinned ? 'true' : 'false';
   document.getElementById('cancelEditBtn').style.display = 'block';
   // switch to new tab
