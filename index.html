@@ -904,7 +904,7 @@ a{color:inherit;text-decoration:none}
   <!-- CATEGORY PILLS -->
   <div class="cat-scroll" id="catPills">
     <button class="cat-pill active" onclick="filterCat('all',this)">All</button>
-    <button class="cat-pill" onclick="filterCat('recipes',this)">🍽️ Recipes</button>
+    <button class="cat-pill" onclick="filterCat('recipes',this)">🍓 Recipes</button>
     <button class="cat-pill" onclick="filterCat('procedures',this)">📋 Procedures</button>
     <button class="cat-pill" onclick="filterCat('training',this)">🎓 Training</button>
     <button class="cat-pill" onclick="filterCat('troubleshooting',this)">🔧 Troubleshoot</button>
@@ -929,7 +929,7 @@ a{color:inherit;text-decoration:none}
       </div>
       <div class="cat-grid">
         <div class="cat-card" onclick="openCatScreen('recipes')">
-          <div class="cat-emoji cat-bg-recipes">🍽️</div>
+          <div class="cat-emoji cat-bg-recipes">🍓</div>
           <div class="cat-name">Recipes</div>
           <div class="cat-count" id="count-recipes">— articles</div>
         </div>
@@ -1259,7 +1259,7 @@ let currentCategory = 'all';
 let bookmarks = JSON.parse(localStorage.getItem('tb_bookmarks') || '[]');
 
 const CATEGORIES = {
-  recipes:        { label:'Recipes',        emoji:'🍽️' },
+  recipes:        { label:'Recipes',        emoji:'🍓' },
   procedures:     { label:'Procedures',     emoji:'📋' },
   training:       { label:'Training',       emoji:'🎓' },
   troubleshooting:{ label:'Troubleshooting',emoji:'🔧' },
@@ -1269,10 +1269,10 @@ const CATEGORIES = {
 
 const SUBCATEGORIES = {
   recipes: [
-    { value:'🥣 Bowls',      label:'🥣 Bowls' },
+    { value:'🍜 Bowls',      label:'🍜 Bowls' },
     { value:'🥤 Smoothies',  label:'🥤 Smoothies' },
     { value:'🍞 Bites',      label:'🍞 Bites' },
-    { value:'☕️ Coffee & Tea', label:'☕️ Coffee & Tea' },
+    { value:'☕ Coffee & Tea', label:'☕ Coffee & Tea' },
   ],
 };
 
@@ -2267,11 +2267,15 @@ function cancelEditItem() {
   document.getElementById('invSaveItemBtn').textContent='Save Item';
 }
 
-async function delInvItem(id,name) {
-  if(!confirm(`Remove "${name}"?`)) return;
-  await sb.from('inventory_items').update({active:false}).eq('id',id);
-  showToast('Item removed');
-  await loadInvData(); renderInvAdminItems(); renderInvCountTab();
+async function delInvItem(id, name) {
+  // Show a clear confirmation before permanently deleting
+  if (!confirm(`⚠️ Permanently delete "${name}"?\n\nThis will remove the item and all its count history from Supabase. This cannot be undone.`)) return;
+
+  const { error } = await sb.from('inventory_items').delete().eq('id', id);
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast(`"${name}" deleted`);
+  await loadInvData();
+  renderInvAdminItems(); renderInvCountTab(); renderInvDashboard();
 }
 
 // ══════════════════════════════════════════════════════════
