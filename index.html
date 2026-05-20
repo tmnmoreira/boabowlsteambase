@@ -2203,7 +2203,7 @@ async function loadInvHistory() {
       <div class="inv-history-top">
         <span class="inv-history-who">${escHtml(s.staff_name||'Unknown')}</span>
         <span class="inv-history-time">${timeAgo(s.submitted_at)}</span>
-        ${isAdmin?`<button class="delete-count-btn" onclick="deleteInvSubmission('${sid}','${escHtml(s.staff_name||'Unknown')}')">🗑</button>`:''}
+        ${isAdmin?`<button class="delete-count-btn" data-sid="${escHtml(sid)}" data-who="${escHtml(s.staff_name||'Unknown')}" onclick="deleteInvSubmission(this)">🗑</button>`:''}
       </div>
       <div class="inv-history-body">${escHtml(itemLine)}</div>
       ${s.notes?`<div style="font-size:12px;color:var(--brown-mid);margin-top:5px;font-style:italic">${escHtml(s.notes)}</div>`:''}
@@ -2212,10 +2212,14 @@ async function loadInvHistory() {
   }).join('');
 }
 
-async function deleteInvSubmission(sid, staffName) {
+async function deleteInvSubmission(btn) {
+  const sid      = btn.dataset.sid;
+  const staffName = btn.dataset.who;
   if (!confirm(`Delete this inventory count by "${staffName}"?\n\nThis will permanently remove it from Supabase and cannot be undone.`)) return;
+  btn.textContent = '⏳';
+  btn.disabled = true;
   const { error } = await sb.from('inventory_counts').delete().eq('submission_id', sid);
-  if (error) { showToast('Error: ' + error.message); return; }
+  if (error) { showToast('Error: ' + error.message); btn.textContent='🗑'; btn.disabled=false; return; }
   showToast('Count deleted');
   await loadInvData();
   loadInvHistory();
