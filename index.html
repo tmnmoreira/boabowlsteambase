@@ -668,6 +668,18 @@ a{color:inherit;text-decoration:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-overlay.fade-out{opacity:0;pointer-events:none}
 
+.delete-count-btn{
+  margin-left:auto;
+  background:none;
+  border:none;
+  font-size:15px;
+  padding:2px 4px;
+  opacity:0.4;
+  transition:opacity 0.15s;
+  cursor:pointer;
+}
+.delete-count-btn:hover{opacity:1}
+
 .subcat-pills{
   display:flex;gap:8px;
   padding:12px 0 14px;
@@ -2191,12 +2203,22 @@ async function loadInvHistory() {
       <div class="inv-history-top">
         <span class="inv-history-who">${escHtml(s.staff_name||'Unknown')}</span>
         <span class="inv-history-time">${timeAgo(s.submitted_at)}</span>
+        ${isAdmin?`<button class="delete-count-btn" onclick="deleteInvSubmission('${sid}','${escHtml(s.staff_name||'Unknown')}')">🗑</button>`:''}
       </div>
       <div class="inv-history-body">${escHtml(itemLine)}</div>
       ${s.notes?`<div style="font-size:12px;color:var(--brown-mid);margin-top:5px;font-style:italic">${escHtml(s.notes)}</div>`:''}
       ${lowItems.length?`<div style="font-size:11px;color:#C0392B;margin-top:4px;font-weight:500">⚠️ Low: ${lowItems.map(i=>i.name).join(', ')}</div>`:''}
     </div>`;
   }).join('');
+}
+
+async function deleteInvSubmission(sid, staffName) {
+  if (!confirm(`Delete this inventory count by "${staffName}"?\n\nThis will permanently remove it from Supabase and cannot be undone.`)) return;
+  const { error } = await sb.from('inventory_counts').delete().eq('submission_id', sid);
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast('Count deleted');
+  await loadInvData();
+  loadInvHistory();
 }
 
 // ── ADMIN: ITEM MANAGEMENT ────────────────────────────────
