@@ -730,6 +730,15 @@ a{color:inherit;text-decoration:none}
 .cl-note-label{font-size:11px;font-weight:600;color:#8A5E00;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:3px}
 .cl-note-text{font-size:14px;color:#3D2600;line-height:1.4}
 .cl-note-text.cl-done{text-decoration:line-through;color:#A07840}
+.cl-note-del{
+  background:none;border:none;
+  font-size:15px;padding:2px 4px;
+  opacity:0.35;transition:opacity 0.15s;
+  flex-shrink:0;align-self:flex-start;
+  margin-top:2px;
+}
+.cl-note-del:hover{opacity:1}
+
 .cl-add-note{background:var(--cream);border:0.5px solid var(--cream-dark);border-radius:var(--radius);padding:12px;margin-bottom:12px}
 .cl-reset{width:100%;padding:12px;background:none;border:0.5px solid var(--cream-dark);border-radius:var(--radius);font-size:13px;font-weight:500;color:var(--brown-mid);margin-top:4px}
 
@@ -1737,12 +1746,13 @@ async function renderChecklist(article) {
     .select('*').eq('article_id', article.id).eq('for_date', todayDate);
 
   const notesHtml = (notes||[]).map(n => `
-    <div class="cl-note" onclick="clToggle(this,null)">
-      <div class="cl-cb"><span class="cl-ck">✓</span></div>
-      <div>
+    <div class="cl-note" id="cl-note-${n.id}">
+      <div class="cl-cb" onclick="clToggle(this.closest('.cl-note'),null)"><span class="cl-ck">✓</span></div>
+      <div style="flex:1" onclick="clToggle(this.closest('.cl-note'),null)">
         <div class="cl-note-label">📌 ${n.for_date === todayDate ? 'Today only' : new Date(n.for_date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}</div>
         <div class="cl-note-text">${escHtml(n.note)}</div>
       </div>
+      ${isAdmin ? `<button class="cl-note-del" onclick="deleteProcedureNote(${n.id})" title="Delete task">🗑</button>` : ''}
     </div>`).join('');
 
   // Admin add note button
@@ -1793,6 +1803,15 @@ async function renderChecklist(article) {
     ${dayHtml}
     <button class="cl-reset" onclick="clReset()">↺ Reset all checkboxes</button>
   `;
+}
+
+async function deleteProcedureNote(id) {
+  if (!confirm('Delete this one-time task?')) return;
+  const { error } = await sb.from('procedure_notes').delete().eq('id', id);
+  if (error) { showToast('Error: ' + error.message); return; }
+  const el = document.getElementById('cl-note-' + id);
+  if (el) el.remove();
+  showToast('Task deleted');
 }
 
 async function addProcedureNote(articleId) {
