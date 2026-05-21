@@ -1366,6 +1366,10 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="report-body" id="reportBody"></div>
     <div class="report-footer">
+      <div style="display:flex;gap:8px;margin-bottom:4px">
+        <button id="reportThisCount" onclick="openOrderReport('this')" style="flex:1;padding:10px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;background:var(--brand);color:#fff;border:none;transition:all 0.15s">📋 This count</button>
+        <button id="reportFullBtn" onclick="openOrderReport('full')" style="flex:1;padding:10px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;background:var(--surface);color:var(--brown);border:1px solid var(--cream-dark);transition:all 0.15s">📊 Full report</button>
+      </div>
       <button class="report-copy-btn" id="reportCopyBtn" onclick="copyOrderReport()">
         📋 Copy to clipboard
       </button>
@@ -2384,6 +2388,8 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════════════════════════
 let invItems  = [];
 let invCounts = [];   // latest count per item_id
+let lastSubmissionId = null; // tracks most recent submission
+let lastSubmissionItemIds = new Set(); // item IDs from last submission
 
 const INV_CATS = {
   bases:            { label:'Bases',             emoji:'🫙' },
@@ -2589,6 +2595,8 @@ async function submitInventoryCount() {
   if (error) { showToast('Error: '+error.message); return; }
 
   showToast(`${rows.length} item${rows.length>1?'s':''} submitted ✓`);
+  lastSubmissionId = submissionId;
+  lastSubmissionItemIds = new Set(rows.map(r => r.item_id));
   document.getElementById('invNotes').value = '';
   await loadInvData();
   renderInvCountTab();
@@ -2763,15 +2771,30 @@ async function delInvItem(id, name) {
 // ══════════════════════════════════════════════════════════
 //  ORDER REPORT
 // ══════════════════════════════════════════════════════════
-function buildOrderReport() {
-  // Items that need ordering: qty <= min_stock (out or low)
-  // Group by distributor for clarity
-  const needsOrder = invItems.filter(i => {
+let currentReportMode = 'full';
+
+function buildOrderReport(mode) {
+  mode = mode || currentReportMode;
+
+  let itemsToCheck;
+  if (mode === 'this' && lastSubmissionId) {
+    // Only items from the most recent submission
+    const submittedIds = invCounts
+      .filter(c => {
+        // Find counts that belong to lastSubmissionId — we need to look at recent history
+        return lastSubmissionItemIds.has(c.item_id);
+      })
+      .map(c => c.item_id);
+    itemsToCheck = invItems.filter(i => lastSubmissionItemIds.has(i.id));
+  } else {
+    itemsToCheck = invItems;
+  }
+
+  const needsOrder = itemsToCheck.filter(i => {
     const s = getStatus(i);
     return s === 'out' || s === 'low';
   });
 
-  // Group by distributor
   const byDist = {};
   needsOrder.forEach(item => {
     const dist = item.distributor || 'Other';
@@ -2782,21 +2805,44 @@ function buildOrderReport() {
   return { needsOrder, byDist };
 }
 
-function openOrderReport() {
-  const { needsOrder, byDist } = buildOrderReport();
-  const date = document.getElementById('invDate').value || new Date().toISOString().split('T')[0];
-  const staff = document.getElementById('invStaffName').value.trim() || 'Staff';
+function openOrderReport(mode) {
+  mode = mode || currentReportMode;
+  currentReportMode = mode;
 
-  let html = '';
+  // Highlight active button
+  document.getElementById('reportThisCount').style.background = mode === 'this' ? 'var(--brand)' : 'var(--surface)';
+  document.getElementById('reportThisCount').style.color = mode === 'this' ? '#fff' : 'var(--brown)';
+  document.getElementById('reportFullBtn').style.background = mode === 'full' ? 'var(--brand)' : 'var(--surface)';
+  document.getElementById('reportFullBtn').style.color = mode === 'full' ? '#fff' : 'var(--brown)';
+
+  // For 'this count' mode, use items from the last submitted session
+  let itemsToCheck = invItems;
+  if (mode === 'this' && lastSubmissionItemIds && lastSubmissionItemIds.size) {
+    itemsToCheck = invItems.filter(i => lastSubmissionItemIds.has(i.id));
+  }
+
+  const needsOrder = itemsToCheck.filter(i => {
+    const s = getStatus(i);
+    return s === 'out' || s === 'low';
+  });
+
+  const byDist = {};
+  needsOrder.forEach(item => {
+    const dist = item.distributor || 'Other';
+    if (!byDist[dist]) byDist[dist] = [];
+    byDist[dist].push(item);
+  });
+
+  const label = mode === 'this' ? 'This Count' : 'Full Report';
+  let html = `<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--brown-light);margin-bottom:12px">${label}</div>`;
 
   if (!needsOrder.length) {
-    html = `<div style="text-align:center;padding:24px 0">
+    html += `<div style="text-align:center;padding:24px 0">
       <div style="font-size:40px;margin-bottom:10px">✅</div>
-      <div style="font-size:15px;font-weight:500;color:var(--brand)">All stocked up!</div>
-      <div style="font-size:13px;color:var(--brown-light);margin-top:4px">Nothing needs ordering right now.</div>
+      <div style="font-size:15px;font-weight:500;color:var(--brand)">${mode === 'this' ? 'All good in this count!' : 'All stocked up!'}</div>
+      <div style="font-size:13px;color:var(--brown-light);margin-top:4px">Nothing needs ordering.</div>
     </div>`;
   } else {
-    // Sort distributors — put Costco first if present
     const dists = Object.keys(byDist).sort((a,b) => a==='Costco'?-1:b==='Costco'?1:a.localeCompare(b));
     dists.forEach(dist => {
       const items = byDist[dist];
@@ -2806,14 +2852,14 @@ function openOrderReport() {
         const qty    = getQty(item.id);
         const status = getStatus(item);
         const color  = status==='out' ? '#C0392B' : '#E8A030';
-        const label  = status==='out' ? 'OUT' : 'LOW';
+        const lbl    = status==='out' ? 'OUT' : 'LOW';
         html += `<div class="report-item-row">
           <div>
             <div class="report-item-name">${escHtml(item.name)}</div>
             ${item.order_note ? `<div style="font-size:11px;color:var(--brand-mid)">${escHtml(item.order_note)}</div>` : ''}
           </div>
           <div style="text-align:right;flex-shrink:0">
-            <div style="font-size:12px;font-weight:600;color:${color}">${label}</div>
+            <div style="font-size:12px;font-weight:600;color:${color}">${lbl}</div>
             <div style="font-size:11px;color:var(--brown-light)">${qty!==null?qty+'/'+item.min_stock:'?/'+item.min_stock}</div>
           </div>
         </div>`;
@@ -2837,16 +2883,35 @@ function closeReportIfBg(e) {
 }
 
 function buildReportText() {
-  const { needsOrder, byDist } = buildOrderReport();
   const date  = document.getElementById('invDate').value || new Date().toISOString().split('T')[0];
   const staff = document.getElementById('invStaffName').value.trim() || 'Staff';
+  const mode  = currentReportMode;
+
+  let itemsToCheck = invItems;
+  if (mode === 'this' && lastSubmissionItemIds && lastSubmissionItemIds.size) {
+    itemsToCheck = invItems.filter(i => lastSubmissionItemIds.has(i.id));
+  }
+
+  const needsOrder = itemsToCheck.filter(i => {
+    const s = getStatus(i);
+    return s === 'out' || s === 'low';
+  });
+
+  const byDist = {};
+  needsOrder.forEach(item => {
+    const dist = item.distributor || 'Other';
+    if (!byDist[dist]) byDist[dist] = [];
+    byDist[dist].push(item);
+  });
+
+  const label = mode === 'this' ? 'THIS COUNT' : 'FULL REPORT';
 
   if (!needsOrder.length) {
     return `BOA BOWLS — ${date}\nAll items stocked ✅\n— ${staff}`;
   }
 
   const dists = Object.keys(byDist).sort((a,b) => a==='Costco'?-1:b==='Costco'?1:a.localeCompare(b));
-  let lines = [`BOA BOWLS ORDER — ${date}`];
+  let lines = [`BOA BOWLS ORDER (${label}) — ${date}`];
 
   dists.forEach(dist => {
     lines.push(`\n${dist.toUpperCase()}:`);
