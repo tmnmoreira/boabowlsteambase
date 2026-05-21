@@ -703,12 +703,14 @@ a{color:inherit;text-decoration:none}
 .subcat-sep{opacity:0.5;margin:0 3px;font-weight:400}
 
 .inline-step-img{
-  width:100%;
   border-radius:var(--radius);
-  margin:14px 0;
+  margin:14px auto;
   object-fit:cover;
   display:block;
 }
+.inline-step-img.size-full  { width:100%; }
+.inline-step-img.size-medium{ width:75%; }
+.inline-step-img.size-small { width:50%; }
 .inline-img-missing{
   background:#FFF8EC;
   border-left:3px solid #E8A030;
@@ -1080,9 +1082,16 @@ a{color:inherit;text-decoration:none}
         <label class="form-label">Content *</label>
         <textarea class="form-textarea" id="fContent" placeholder="Write the article content here. Use markdown-style headings with ## and steps numbered 1. 2. 3."></textarea>
         <input type="file" id="inlineImgUpload" accept="image/*" style="display:none" onchange="insertInlineImage(this)">
-        <button type="button" class="insert-img-btn" onclick="document.getElementById('inlineImgUpload').click()">
-          🖼️ Insert image at cursor
-        </button>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <select class="form-select" id="inlineImgSize" style="flex:1;font-size:13px">
+            <option value="full">Full width</option>
+            <option value="medium">Medium (75%)</option>
+            <option value="small">Small (50%)</option>
+          </select>
+          <button type="button" class="insert-img-btn" style="flex:2;margin-top:0" onclick="document.getElementById('inlineImgUpload').click()">
+            🖼️ Insert image at cursor
+          </button>
+        </div>
         <div id="inlineImgStatus" style="display:none;font-size:12px;color:var(--brand);margin-top:6px;padding:6px 10px;background:var(--brand-light);border-radius:var(--radius-xs)"></div>
       </div>
       <div class="form-group">
@@ -1516,13 +1525,18 @@ async function renderContent(text) {
       if (inList) { html += '</ul>'; inList = false; }
       continue;
     }
-    // Inline image: [image: filename.jpg] or [image: folder/filename.jpg]
+    // Inline image: [image: filename.jpg] or [image: filename.jpg, size: small/medium/full]
     if (/^\[image:\s*.+\]$/.test(trimmed)) {
       if (inList) { html += '</ul>'; inList = false; }
-      const filePath = trimmed.replace(/^\[image:\s*/, '').replace(/\]$/, '').trim();
+      const inner    = trimmed.replace(/^\[image:\s*/, '').replace(/\]$/, '').trim();
+      const parts    = inner.split(',').map(p => p.trim());
+      const filePath = parts[0];
+      const sizePart = parts.find(p => p.toLowerCase().startsWith('size:'));
+      const size     = sizePart ? sizePart.split(':')[1].trim().toLowerCase() : 'full';
+      const sizeClass = ['small','medium','full'].includes(size) ? size : 'full';
       const url = await getSignedUrl('article-media', filePath);
       if (url) {
-        html += `<img src="${url}" class="inline-step-img" alt="Step image">`;
+        html += `<img src="${url}" class="inline-step-img size-${sizeClass}" alt="Step image">`;
       } else {
         html += `<div class="inline-img-missing">⚠️ Image not found: ${escHtml(filePath)}</div>`;
       }
@@ -1888,9 +1902,10 @@ async function insertInlineImage(input) {
 
   // Insert the tag at cursor position in the textarea
   const ta    = document.getElementById('fContent');
+  const size  = document.getElementById('inlineImgSize').value;
   const start = ta.selectionStart;
   const end   = ta.selectionEnd;
-  const tag   = `\n[image: ${path}]\n`;
+  const tag   = size === 'full' ? `\n[image: ${path}]\n` : `\n[image: ${path}, size: ${size}]\n`;
   ta.value    = ta.value.slice(0, start) + tag + ta.value.slice(end);
   ta.selectionStart = ta.selectionEnd = start + tag.length;
   ta.focus();
