@@ -668,6 +668,33 @@ a{color:inherit;text-decoration:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-overlay.fade-out{opacity:0;pointer-events:none}
 
+.size-toggle-bar{
+  display:flex;
+  background:var(--cream-dark);
+  border-radius:20px;
+  padding:3px;
+  gap:3px;
+  margin-bottom:4px;
+}
+.sz-btn{
+  flex:1;
+  padding:7px 0;
+  border-radius:16px;
+  font-size:13px;font-weight:600;
+  color:var(--brown-mid);
+  background:none;border:none;
+  cursor:pointer;transition:all 0.15s;
+}
+.sz-btn.active{
+  background:var(--surface);
+  color:var(--brand);
+  box-shadow:0 1px 3px rgba(0,0,0,0.08);
+}
+.sz-qty{
+  font-weight:700;
+  color:var(--brand);
+}
+
 .delete-count-btn{
   margin-left:auto;
   background:none;
@@ -1525,8 +1552,15 @@ async function renderContent(text) {
       if (inList) { html += '</ul>'; inList = false; }
       continue;
     }
+    // Size toggle widget: [size-toggle]
+    if (trimmed === '[size-toggle]') {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<div class="size-toggle-bar">
+        <button class="sz-btn active" onclick="setSizeToggle(this,'small')">Small</button>
+        <button class="sz-btn" onclick="setSizeToggle(this,'large')">Large</button>
+      </div>`;
     // Inline image: [image: filename.jpg] or [image: filename.jpg, size: small/medium/full]
-    if (/^\[image:\s*.+\]$/.test(trimmed)) {
+    } else if (/^\[image:\s*.+\]$/.test(trimmed)) {
       if (inList) { html += '</ul>'; inList = false; }
       const inner    = trimmed.replace(/^\[image:\s*/, '').replace(/\]$/, '').trim();
       const parts    = inner.split(',').map(p => p.trim());
@@ -1552,8 +1586,12 @@ async function renderContent(text) {
     } else if (/^\d+\.\s/.test(trimmed)) {
       if (inList) { html += '</ul>'; inList = false; }
       const num = trimmed.match(/^(\d+)\./)[1];
-      const content = trimmed.slice(trimmed.indexOf(' ') + 1);
-      html += `<div class="step-card"><div class="step-num">${num}</div><div class="step-text">${escHtml(content)}</div></div>`;
+      const rawContent = trimmed.slice(trimmed.indexOf(' ') + 1);
+      // Parse [s:small|large] inline size tokens
+      const content = rawContent.replace(/\[s:([^\|]+)\|([^\]]+)\]/g, (_, s, l) =>
+        `<span class="sz-qty" data-small="${escHtml(s)}" data-large="${escHtml(l)}">${escHtml(s)}</span>`
+      );
+      html += `<div class="step-card"><div class="step-num">${num}</div><div class="step-text">${content}</div></div>`;
     } else if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
       if (!inList) { html += '<ul>'; inList = true; }
       html += `<li>${escHtml(trimmed.slice(2))}</li>`;
@@ -1564,6 +1602,15 @@ async function renderContent(text) {
   }
   if (inList) html += '</ul>';
   return html;
+}
+
+function setSizeToggle(btn, size) {
+  const detail = btn.closest('.detail-body');
+  detail.querySelectorAll('.sz-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  detail.querySelectorAll('.sz-qty').forEach(el => {
+    el.textContent = el.dataset[size];
+  });
 }
 
 // ══════════════════════════════════════════════════════════
