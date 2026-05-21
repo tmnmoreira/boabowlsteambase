@@ -1289,7 +1289,10 @@ a{color:inherit;text-decoration:none}
         <label class="form-label">Notes (optional)</label>
         <textarea class="form-textarea" id="invNotes" placeholder="Issues, damaged items, shortages…" style="min-height:68px"></textarea>
       </div>
-      <button class="primary-btn" id="invSubmitBtn" onclick="submitInventoryCount()">Submit Count</button>
+      <div style="display:flex;gap:8px">
+        <button class="primary-btn" id="invSubmitBtn" onclick="submitInventoryCount()" style="flex:2">Submit Count</button>
+        <button class="primary-btn" onclick="clearInvCount()" style="flex:1;background:var(--brown-mid)" title="Clear all fields for a new count">↺ New Count</button>
+      </div>
       <button class="primary-btn" id="invReportBtn" onclick="openOrderReport()" style="background:var(--accent);margin-top:10px;display:none">📋 View Order Report</button>
     </div>
 
@@ -2539,6 +2542,17 @@ function updateAlertBanner() {
   } else {
     banner.style.display = 'none';
   }
+}
+
+function clearInvCount() {
+  if (!confirm('Clear all quantities to start a new count?')) return;
+  invItems.forEach(item => {
+    const inp = document.getElementById('iq_' + item.id);
+    if (inp) inp.value = '';
+  });
+  document.getElementById('invNotes').value = '';
+  updateCountProgress();
+  showToast('Fields cleared — ready for new count');
 }
 
 async function submitInventoryCount() {
