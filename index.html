@@ -1720,7 +1720,7 @@ async function renderChecklist(article) {
   const DAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
   const todayName = DAY_NAMES[new Date().getDay()];
   const todayLabel = todayName.charAt(0).toUpperCase() + todayName.slice(1);
-  const todayDate = new Date().toISOString().split('T')[0];
+  const todayDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
 
   // Parse content sections
   const text = article.content.replace('[checklist]','').trim();
@@ -1740,7 +1740,7 @@ async function renderChecklist(article) {
     <div class="cl-note" onclick="clToggle(this,null)">
       <div class="cl-cb"><span class="cl-ck">✓</span></div>
       <div>
-        <div class="cl-note-label">📌 Tonight only</div>
+        <div class="cl-note-label">📌 ${n.for_date === todayDate ? 'Today only' : new Date(n.for_date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}</div>
         <div class="cl-note-text">${escHtml(n.note)}</div>
       </div>
     </div>`).join('');
@@ -1748,8 +1748,12 @@ async function renderChecklist(article) {
   // Admin add note button
   const adminNoteHtml = isAdmin ? `
     <div class="cl-add-note">
-      <input type="text" id="clNoteInput" class="form-input" placeholder="Add a one-time task for tonight…" style="margin-bottom:8px">
-      <button class="primary-btn" style="width:100%;padding:10px" onclick="addProcedureNote(${article.id})">Add tonight's task</button>
+      <input type="text" id="clNoteInput" class="form-input" placeholder="Add a one-time task…" style="margin-bottom:8px">
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+        <label style="font-size:12px;font-weight:600;color:var(--brown-mid);flex-shrink:0">Show on:</label>
+        <input type="date" id="clNoteDate" class="form-input" style="flex:1" value="${todayDate}">
+      </div>
+      <button class="primary-btn" style="width:100%;padding:10px" onclick="addProcedureNote(${article.id})">Add task</button>
     </div>` : '';
 
   // Daily tasks
@@ -1793,13 +1797,15 @@ async function renderChecklist(article) {
 
 async function addProcedureNote(articleId) {
   const input = document.getElementById('clNoteInput');
+  const datePicker = document.getElementById('clNoteDate');
   const note = input.value.trim();
+  const forDate = datePicker ? datePicker.value : new Date().toLocaleDateString('en-CA');
   if (!note) return;
-  const todayDate = new Date().toISOString().split('T')[0];
-  const { error } = await sb.from('procedure_notes').insert({ article_id: articleId, note, for_date: todayDate });
+  if (!forDate) { showToast('Please select a date'); return; }
+  const { error } = await sb.from('procedure_notes').insert({ article_id: articleId, note, for_date: forDate });
   if (error) { showToast('Error: ' + error.message); return; }
   input.value = '';
-  showToast('Task added!');
+  showToast('Task added for ' + new Date(forDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }));
   openArticle(currentArticle);
 }
 
