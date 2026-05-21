@@ -1741,18 +1741,35 @@ async function renderChecklist(article) {
     else if (t && current) sections[current].push(t);
   }
 
-  // Load today's admin notes from Supabase
-  const { data: notes } = await sb.from('procedure_notes')
-    .select('*').eq('article_id', article.id).eq('for_date', todayDate);
+  // Load notes — admins see all upcoming notes, staff only see today's
+  const notesQuery = isAdmin
+    ? sb.from('procedure_notes').select('*').eq('article_id', article.id).gte('for_date', todayDate).order('for_date')
+    : sb.from('procedure_notes').select('*').eq('article_id', article.id).eq('for_date', todayDate);
+  const { data: notes } = await notesQuery;
 
   const notesHtml = (notes||[]).map(n => `
     <div class="cl-note" id="cl-note-${n.id}">
       <div class="cl-cb" onclick="clToggle(this.closest('.cl-note'),null)"><span class="cl-ck">✓</span></div>
       <div style="flex:1" onclick="clToggle(this.closest('.cl-note'),null)">
         <div class="cl-note-label">📌 ${n.for_date === todayDate ? 'Today only' : new Date(n.for_date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}</div>
-        <div class="cl-note-text">${escHtml(n.note)}</div>
+        <div class="cl-note-text" id="cl-note-text-${n.id}">${escHtml(n.note)}</div>
       </div>
-      ${isAdmin ? `<button class="cl-note-del" onclick="deleteProcedureNote(${n.id})" title="Delete task">🗑</button>` : ''}
+      ${isAdmin ? `
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:4px">
+          <button class="cl-note-del" onclick="editProcedureNote(${n.id},'${escHtml(n.note).replace(/'/g,"\\'")}','${n.for_date}')" title="Edit task">✏️</button>
+          <button class="cl-note-del" onclick="deleteProcedureNote(${n.id})" title="Delete task">🗑</button>
+        </div>` : ''}
+    </div>
+    <div class="cl-note-edit-form" id="cl-edit-form-${n.id}" style="display:none;background:var(--cream);border:1px solid var(--cream-dark);border-radius:var(--radius-sm);padding:12px;margin-bottom:10px">
+      <input type="text" class="form-input" id="cl-edit-text-${n.id}" value="${escHtml(n.note)}" style="margin-bottom:8px">
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+        <label style="font-size:12px;font-weight:600;color:var(--brown-mid);flex-shrink:0">Date:</label>
+        <input type="date" class="form-input" id="cl-edit-date-${n.id}" value="${n.for_date}" style="flex:1">
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="primary-btn" style="flex:1;padding:9px;margin-top:0;font-size:13px" onclick="saveProcedureNote(${n.id})">Save</button>
+        <button style="flex:1;padding:9px;font-size:13px;background:var(--surface);border:1px solid var(--cream-dark);border-radius:var(--radius-sm);color:var(--brown-mid)" onclick="cancelEditNote(${n.id})">Cancel</button>
+      </div>
     </div>`).join('');
 
   // Admin add note button
@@ -1803,6 +1820,26 @@ async function renderChecklist(article) {
     ${dayHtml}
     <button class="cl-reset" onclick="clReset()">↺ Reset all checkboxes</button>
   `;
+}
+
+function editProcedureNote(id, note, date) {
+  document.getElementById('cl-edit-form-' + id).style.display = 'block';
+  document.getElementById('cl-note-' + id).style.display = 'none';
+}
+
+function cancelEditNote(id) {
+  document.getElementById('cl-edit-form-' + id).style.display = 'none';
+  document.getElementById('cl-note-' + id).style.display = 'flex';
+}
+
+async function saveProcedureNote(id) {
+  const note    = document.getElementById('cl-edit-text-' + id).value.trim();
+  const forDate = document.getElementById('cl-edit-date-' + id).value;
+  if (!note || !forDate) { showToast('Please fill in both fields'); return; }
+  const { error } = await sb.from('procedure_notes').update({ note, for_date: forDate }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast('Task updated!');
+  openArticle(currentArticle);
 }
 
 async function deleteProcedureNote(id) {
