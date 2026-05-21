@@ -2124,6 +2124,8 @@ async function removeVideo() {
   wrap.dataset.path = '';
   showToast('Video removed');
 }
+
+function cancelEdit() {
   clearForm();
   const tabs = document.querySelectorAll('.admin-tab');
   switchAdminTab('articles', tabs[0]);
