@@ -1419,7 +1419,7 @@ async function boot() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     currentUser = session.user;
-    isAdmin = currentUser.email === ADMIN_EMAIL;
+    isAdmin = false; // will be set in enterApp from profiles table
     await enterApp();
   } else {
     showScreen('login');
@@ -1463,7 +1463,7 @@ async function doLogin() {
     return;
   }
   currentUser = data.user;
-  isAdmin = currentUser.email === ADMIN_EMAIL;
+  isAdmin = false; // will be set in enterApp from profiles table
   await enterApp();
 }
 
@@ -1480,6 +1480,9 @@ async function doLogout() {
 // ══════════════════════════════════════════════════════════
 async function enterApp() {
   showScreen('app');
+  // Fetch role from profiles table
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', currentUser.id).single();
+  isAdmin = profile?.role === 'admin';
   document.getElementById('adminBtn').style.display = isAdmin ? 'flex' : 'none';
   await loadArticles();
   renderHome();
