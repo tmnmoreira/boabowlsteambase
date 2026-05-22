@@ -2945,6 +2945,78 @@ function smsOrderReport() {
 }
 
 // ══════════════════════════════════════════════════════════
+//  HAMBURGER MENU & CHANGE PASSWORD
+// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+//  HAMBURGER MENU
+// ══════════════════════════════════════════════════════════
+function toggleHamburger() {
+  const menu = document.getElementById('hamburgerMenu');
+  const overlay = document.getElementById('hamburgerOverlay');
+  const isOpen = menu.style.transform === 'translateX(0%)';
+  if (isOpen) {
+    closeHamburger();
+  } else {
+    // Populate user info
+    if (currentUser) {
+      const email = currentUser.email || '';
+      const name = email.split('@')[0];
+      document.getElementById('menuUserName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+      document.getElementById('menuUserEmail').textContent = email;
+      const roleEl = document.getElementById('menuUserRole');
+      roleEl.textContent = isAdmin ? 'Admin' : 'Staff';
+      roleEl.style.background = isAdmin ? 'var(--brand-light)' : 'var(--cream-dark)';
+      roleEl.style.color = isAdmin ? 'var(--brand)' : 'var(--brown-mid)';
+    }
+    // Show admin button only for admins
+    document.getElementById('menuAdminBtn').style.display = isAdmin ? 'flex' : 'none';
+    overlay.style.display = 'block';
+    menu.style.transform = 'translateX(0%)';
+  }
+}
+
+function closeHamburger() {
+  document.getElementById('hamburgerMenu').style.transform = 'translateX(100%)';
+  document.getElementById('hamburgerOverlay').style.display = 'none';
+}
+function openChangePassword() {
+  document.getElementById('newPw1').value = '';
+  document.getElementById('newPw2').value = '';
+  document.getElementById('pwError').style.display = 'none';
+  const overlay = document.getElementById('changePwOverlay');
+  overlay.style.display = 'flex';
+}
+
+function closeChangePassword() {
+  document.getElementById('changePwOverlay').style.display = 'none';
+}
+
+async function doChangePassword() {
+  const pw1 = document.getElementById('newPw1').value;
+  const pw2 = document.getElementById('newPw2').value;
+  const err = document.getElementById('pwError');
+  err.style.display = 'none';
+
+  if (!pw1) { err.textContent = 'Please enter a new password.'; err.style.display = 'block'; return; }
+  if (pw1.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = 'block'; return; }
+  if (pw1 !== pw2) { err.textContent = 'Passwords don\'t match.'; err.style.display = 'block'; return; }
+
+  const { error } = await sb.auth.updateUser({ password: pw1 });
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+
+  closeChangePassword();
+  showToast('Password updated! ✓');
+}
+
+// Close if tapping background
+document.addEventListener('DOMContentLoaded', function() {
+  const overlay = document.getElementById('changePwOverlay');
+  if (overlay) overlay.addEventListener('click', function(e) {
+    if (e.target === this) closeChangePassword();
+  });
+});
+
+// ══════════════════════════════════════════════════════════
 //  START
 // ══════════════════════════════════════════════════════════
 boot();
@@ -3008,74 +3080,6 @@ boot();
     </div>
   </div>
 </div>
-
-<script>
-// ══════════════════════════════════════════════════════════
-//  HAMBURGER MENU
-// ══════════════════════════════════════════════════════════
-function toggleHamburger() {
-  const menu = document.getElementById('hamburgerMenu');
-  const overlay = document.getElementById('hamburgerOverlay');
-  const isOpen = menu.style.transform === 'translateX(0%)';
-  if (isOpen) {
-    closeHamburger();
-  } else {
-    // Populate user info
-    if (currentUser) {
-      const email = currentUser.email || '';
-      const name = email.split('@')[0];
-      document.getElementById('menuUserName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
-      document.getElementById('menuUserEmail').textContent = email;
-      const roleEl = document.getElementById('menuUserRole');
-      roleEl.textContent = isAdmin ? 'Admin' : 'Staff';
-      roleEl.style.background = isAdmin ? 'var(--brand-light)' : 'var(--cream-dark)';
-      roleEl.style.color = isAdmin ? 'var(--brand)' : 'var(--brown-mid)';
-    }
-    // Show admin button only for admins
-    document.getElementById('menuAdminBtn').style.display = isAdmin ? 'flex' : 'none';
-    overlay.style.display = 'block';
-    menu.style.transform = 'translateX(0%)';
-  }
-}
-
-function closeHamburger() {
-  document.getElementById('hamburgerMenu').style.transform = 'translateX(100%)';
-  document.getElementById('hamburgerOverlay').style.display = 'none';
-}
-function openChangePassword() {
-  document.getElementById('newPw1').value = '';
-  document.getElementById('newPw2').value = '';
-  document.getElementById('pwError').style.display = 'none';
-  const overlay = document.getElementById('changePwOverlay');
-  overlay.style.display = 'flex';
-}
-
-function closeChangePassword() {
-  document.getElementById('changePwOverlay').style.display = 'none';
-}
-
-async function doChangePassword() {
-  const pw1 = document.getElementById('newPw1').value;
-  const pw2 = document.getElementById('newPw2').value;
-  const err = document.getElementById('pwError');
-  err.style.display = 'none';
-
-  if (!pw1) { err.textContent = 'Please enter a new password.'; err.style.display = 'block'; return; }
-  if (pw1.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = 'block'; return; }
-  if (pw1 !== pw2) { err.textContent = 'Passwords don\'t match.'; err.style.display = 'block'; return; }
-
-  const { error } = await sb.auth.updateUser({ password: pw1 });
-  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
-
-  closeChangePassword();
-  showToast('Password updated! ✓');
-}
-
-// Close if tapping background
-document.getElementById('changePwOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeChangePassword();
-});
-</script>
 
 </body>
 </html>
