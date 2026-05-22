@@ -1202,11 +1202,23 @@ a{color:inherit;text-decoration:none}
         <div id="inlineImgStatus" style="display:none;font-size:12px;color:var(--brand);margin-top:6px;padding:6px 10px;background:var(--brand-light);border-radius:var(--radius-xs)"></div>
       </div>
       <div class="form-group">
-        <label class="form-label">Pin as featured?</label>
-        <select class="form-select" id="fPinned">
-          <option value="false">No</option>
-          <option value="true">Yes — show on home banner</option>
-        </select>
+        <label class="form-label">Pin options</label>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface);border:1px solid var(--cream-dark);border-radius:var(--radius-sm);cursor:pointer">
+            <input type="checkbox" id="fPinned" style="width:18px;height:18px;accent-color:var(--brand)">
+            <div>
+              <div style="font-size:14px;font-weight:500;color:var(--brown)">🏠 Pin to Home</div>
+              <div style="font-size:12px;color:var(--brown-light)">Shows as featured banner on the home screen</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface);border:1px solid var(--cream-dark);border-radius:var(--radius-sm);cursor:pointer">
+            <input type="checkbox" id="fPinCategory" style="width:18px;height:18px;accent-color:var(--brand)">
+            <div>
+              <div style="font-size:14px;font-weight:500;color:var(--brown)">📂 Pin to Category</div>
+              <div style="font-size:12px;color:var(--brown-light)">Shows as featured banner inside its category</div>
+            </div>
+          </label>
+        </div>
       </div>
 
       <div class="admin-section-title">Media</div>
@@ -2004,7 +2016,7 @@ function openCatScreen(cat) {
   const el = document.getElementById('catScreenList');
 
   // Pinned article banner for this category
-  const pinned = filtered.find(a => a.is_pinned);
+  const pinned = filtered.find(a => a.pin_category);
   const pinnedHtml = pinned ? `
     <div class="featured" style="margin-bottom:16px" onclick="openArticle(allArticles.find(a=>a.id===${pinned.id}))">
       <div class="featured-label">⭐ Pinned</div>
@@ -2012,6 +2024,9 @@ function openCatScreen(cat) {
       ${pinned.summary ? `<div class="featured-desc">${escHtml(pinned.summary)}</div>` : ''}
       <button class="featured-btn">Read now →</button>
     </div>` : '';
+
+  // Exclude pinned from the article list to avoid duplication
+  const rest = filtered.filter(a => !a.pin_category);
 
   // Build subcategory pills if subcategories exist for this category
   const subs = SUBCATEGORIES[cat] || [];
@@ -2033,8 +2048,6 @@ function openCatScreen(cat) {
       <div class="empty-sub">${isAdmin ? 'Use the admin panel to add the first one.' : 'Check back soon.'}</div>
     </div>`;
   } else {
-    // Exclude pinned from the article list to avoid duplication
-    const rest = filtered.filter(a => !a.is_pinned);
     el.innerHTML = pinnedHtml + pillsHtml + `<div id="subcatArticleList">${rest.map(a => articleCard(a)).join('')}</div>`;
   }
   document.getElementById('screen-category').classList.add('open');
@@ -2188,7 +2201,8 @@ async function editArticle(id) {
   document.getElementById('fContent').value     = a.content || '';
   updateSubcategoryOptions(a.subcategory || '');
   document.getElementById('fSubcategory').value = a.subcategory || '';
-  document.getElementById('fPinned').value      = a.is_pinned ? 'true' : 'false';
+  document.getElementById('fPinned').checked      = a.is_pinned || false;
+  document.getElementById('fPinCategory').checked = a.pin_category || false;
   // Show current video remove button if article has a video
   document.getElementById('currentVideoWrap').style.display = a.video_path ? 'block' : 'none';
   document.getElementById('currentVideoWrap').dataset.path = a.video_path || '';
@@ -2226,7 +2240,8 @@ async function saveArticle() {
   const summary  = document.getElementById('fSummary').value.trim();
   const subcategory = document.getElementById('fSubcategory').value.trim();
   const content  = document.getElementById('fContent').value.trim();
-  const is_pinned = document.getElementById('fPinned').value === 'true';
+  const is_pinned     = document.getElementById('fPinned').checked;
+  const pin_category  = document.getElementById('fPinCategory').checked;
 
   if (!title || !category || !content) {
     showToast('Please fill in title, category and content');
@@ -2258,7 +2273,7 @@ async function saveArticle() {
   }
 
   const payload = {
-    title, category, summary, subcategory, content, is_pinned,
+    title, category, summary, subcategory, content, is_pinned, pin_category,
     updated_at: new Date().toISOString(),
     ...(image_path && { image_path }),
     ...(video_path && { video_path, has_video }),
@@ -2297,7 +2312,8 @@ function clearForm() {
   document.getElementById('fSummary').value     = '';
   document.getElementById('fSubcategory').value = '';
   document.getElementById('fContent').value     = '';
-  document.getElementById('fPinned').value   = 'false';
+  document.getElementById('fPinned').checked      = false;
+  document.getElementById('fPinCategory').checked = false;
   document.getElementById('cancelEditBtn').style.display = 'none';
   clearFile('imgUpload','imgPreview');
   clearFile('vidUpload','vidPreview');
