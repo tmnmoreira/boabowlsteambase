@@ -2003,6 +2003,16 @@ function openCatScreen(cat) {
   const filtered = allArticles.filter(a => a.category === cat);
   const el = document.getElementById('catScreenList');
 
+  // Pinned article banner for this category
+  const pinned = filtered.find(a => a.is_pinned);
+  const pinnedHtml = pinned ? `
+    <div class="featured" style="margin-bottom:16px" onclick="openArticle(allArticles.find(a=>a.id===${pinned.id}))">
+      <div class="featured-label">⭐ Pinned</div>
+      <div class="featured-title">${escHtml(pinned.title)}</div>
+      ${pinned.summary ? `<div class="featured-desc">${escHtml(pinned.summary)}</div>` : ''}
+      <button class="featured-btn">Read now →</button>
+    </div>` : '';
+
   // Build subcategory pills if subcategories exist for this category
   const subs = SUBCATEGORIES[cat] || [];
   let pillsHtml = '';
@@ -2017,13 +2027,15 @@ function openCatScreen(cat) {
   }
 
   if (!filtered.length) {
-    el.innerHTML = `${pillsHtml}<div class="empty-state">
+    el.innerHTML = `${pinnedHtml}${pillsHtml}<div class="empty-state">
       <div class="empty-icon">${info.emoji}</div>
       <div class="empty-title">No ${info.label} articles yet</div>
       <div class="empty-sub">${isAdmin ? 'Use the admin panel to add the first one.' : 'Check back soon.'}</div>
     </div>`;
   } else {
-    el.innerHTML = pillsHtml + `<div id="subcatArticleList">${filtered.map(a => articleCard(a)).join('')}</div>`;
+    // Exclude pinned from the article list to avoid duplication
+    const rest = filtered.filter(a => !a.is_pinned);
+    el.innerHTML = pinnedHtml + pillsHtml + `<div id="subcatArticleList">${rest.map(a => articleCard(a)).join('')}</div>`;
   }
   document.getElementById('screen-category').classList.add('open');
 }
