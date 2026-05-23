@@ -1760,17 +1760,30 @@ async function renderChecklist(article) {
   const todayLabel = todayName.charAt(0).toUpperCase() + todayName.slice(1);
   const todayDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
 
-  // Parse content sections
+  // Parse content — supports:
+  // ## daily, ## wednesday, ## sunday = special keywords
+  // ### Section Name = named sub-sections within daily
   const text = article.content.replace('[checklist]','').trim();
-  const sections = {};
+  const DAY_KEYS = ['daily','sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const sections = {}; // keyed by section name
+  const sectionOrder = []; // ordered list of { key, label, tasks }
   let current = null;
+
   for (const line of text.split('\n')) {
     const t = line.trim();
-    if (t.startsWith('## ')) { current = t.slice(3).toLowerCase(); sections[current] = []; }
-    else if (t && current) sections[current].push(t);
+    if (t.startsWith('## ')) {
+      const key = t.slice(3).trim();
+      current = key.toLowerCase();
+      if (!sections[current]) { sections[current] = []; }
+      if (!sectionOrder.find(s => s.key === current)) {
+        sectionOrder.push({ key: current, label: key, tasks: sections[current] });
+      }
+    } else if (t && current) {
+      sections[current].push(t);
+    }
   }
 
-  // Load notes — admins see all upcoming notes, staff only see today's
+  // Load notes
   const notesQuery = isAdmin
     ? sb.from('procedure_notes').select('*').eq('article_id', article.id).gte('for_date', todayDate).order('for_date')
     : sb.from('procedure_notes').select('*').eq('article_id', article.id).eq('for_date', todayDate);
@@ -1801,7 +1814,7 @@ async function renderChecklist(article) {
       </div>
     </div>`).join('');
 
-  // Admin add note button
+  // Admin add note
   const adminNoteHtml = isAdmin ? `
     <div class="cl-add-note">
       <input type="text" id="clNoteInput" class="form-input" placeholder="Add a one-time task…" style="margin-bottom:8px">
@@ -1812,13 +1825,43 @@ async function renderChecklist(article) {
       <button class="primary-btn" style="width:100%;padding:10px" onclick="addProcedureNote(${article.id})">Add task</button>
     </div>` : '';
 
-  // Daily tasks
-  const dailyTasks = (sections['daily']||[]);
-  const dailyHtml = dailyTasks.map(t => `
-    <div class="cl-task" onclick="clToggle(this,'daily')">
-      <div class="cl-cb"><span class="cl-ck">✓</span></div>
-      <div class="cl-text">${escHtml(t)}</div>
-    </div>`).join('');
+  // Build daily sections html — group by named sub-sections or single block
+  const dailySections = sectionOrder.filter(s => !DAY_KEYS.slice(1).includes(s.key) && s.key !== 'daily');
+  const hasSections = dailySections.length > 0;
+  const allDailyTasks = sectionOrder
+    .filter(s => !DAY_KEYS.slice(1).includes(s.key))
+    .reduce((acc, s) => acc.concat(s.tasks), []);
+
+  let dailyHtml = '';
+  if (hasSections) {
+    // Render each named section as its own card
+    dailyHtml = sectionOrder.filter(s => !DAY_KEYS.slice(1).includes(s.key)).map(s => `
+      <div class="cl-section" style="margin-bottom:10px">
+        <div class="cl-section-header">
+          <span>${escHtml(s.label)}</span>
+          <span class="cl-prog">0 / ${s.tasks.length}</span>
+        </div>
+        ${s.tasks.map(t => `
+          <div class="cl-task" onclick="clToggle(this,'daily')">
+            <div class="cl-cb"><span class="cl-ck">✓</span></div>
+            <div class="cl-text">${escHtml(t)}</div>
+          </div>`).join('')}
+      </div>`).join('');
+  } else {
+    const tasks = sections['daily'] || [];
+    dailyHtml = `
+      <div class="cl-section">
+        <div class="cl-section-header">
+          <span>Every Day</span>
+          <span class="cl-prog" id="cl-prog-daily">0 / ${tasks.length}</span>
+        </div>
+        ${tasks.map(t => `
+          <div class="cl-task" onclick="clToggle(this,'daily')">
+            <div class="cl-cb"><span class="cl-ck">✓</span></div>
+            <div class="cl-text">${escHtml(t)}</div>
+          </div>`).join('')}
+      </div>`;
+  }
 
   // Day-specific tasks
   const dayTasks = sections[todayName] || [];
@@ -1839,13 +1882,7 @@ async function renderChecklist(article) {
     <div class="cl-day-pill">📅 ${todayLabel}</div>
     ${adminNoteHtml}
     ${notesHtml}
-    <div class="cl-section">
-      <div class="cl-section-header">
-        <span>Every Day</span>
-        <span class="cl-prog" id="cl-prog-daily">0 / ${dailyTasks.length}</span>
-      </div>
-      ${dailyHtml}
-    </div>
+    ${dailyHtml}
     ${dayHtml}
     <button class="cl-reset" onclick="clReset()">↺ Reset all checkboxes</button>
   `;
