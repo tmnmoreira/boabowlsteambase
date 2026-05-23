@@ -1625,11 +1625,14 @@ async function openArticle(article) {
 
   const isChecklist  = (article.content || '').trimStart().startsWith('[checklist]');
   const isPlatforms  = (article.content || '').trimStart().startsWith('[platforms]');
+  const isHtml       = (article.content || '').trimStart().startsWith('[html]');
   let contentHtml;
   if (isChecklist) {
     contentHtml = await renderChecklist(article);
   } else if (isPlatforms) {
     contentHtml = renderPlatforms(article.content);
+  } else if (isHtml) {
+    contentHtml = article.content.replace(/^\[html\]\s*/,'');
   } else {
     contentHtml = await renderContent(article.content || '');
   }
