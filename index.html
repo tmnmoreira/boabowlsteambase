@@ -1147,12 +1147,19 @@ a{color:inherit;text-decoration:none}
     <div class="admin-tab-bar">
       <button class="admin-tab active" onclick="switchAdminTab('articles',this)">📄 Articles</button>
       <button class="admin-tab" onclick="switchAdminTab('new',this)">➕ New Article</button>
+      <button class="admin-tab" onclick="switchAdminTab('completions',this)">🎓 Training</button>
     </div>
 
     <!-- Articles list tab -->
     <div id="adminArticlesTab">
       <div class="admin-section-title">All articles</div>
       <div id="adminArticleList"></div>
+    </div>
+
+    <!-- Completions tab -->
+    <div id="adminCompletionsTab" style="display:none">
+      <div class="admin-section-title">Training completions</div>
+      <div id="adminCompletionsList"></div>
     </div>
 
     <!-- New / Edit article tab -->
@@ -1641,9 +1648,15 @@ async function openArticle(article) {
     </div>
     ${mediaHtml}
     <div class="detail-content">${contentHtml}</div>
+    ${article.category === 'training' ? `<div id="completionBtnWrap" style="margin-top:24px"></div>` : ''}
   `;
 
   document.getElementById('screen-detail').classList.add('open');
+
+  // Load completion status for training articles
+  if (article.category === 'training') {
+    loadCompletionStatus(article.id);
+  }
 }
 
 function closeDetail() {
@@ -2231,8 +2244,10 @@ function closeAdmin() {
 function switchAdminTab(tab, btn) {
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('adminArticlesTab').style.display = tab === 'articles' ? 'block' : 'none';
-  document.getElementById('adminNewTab').style.display      = tab === 'new'      ? 'block' : 'none';
+  document.getElementById('adminArticlesTab').style.display    = tab === 'articles'    ? 'block' : 'none';
+  document.getElementById('adminNewTab').style.display         = tab === 'new'         ? 'block' : 'none';
+  document.getElementById('adminCompletionsTab').style.display = tab === 'completions' ? 'block' : 'none';
+  if (tab === 'completions') loadAdminCompletions();
 }
 
 async function loadAdminArticles() {
@@ -3014,8 +3029,76 @@ function smsOrderReport() {
 }
 
 // ══════════════════════════════════════════════════════════
-//  HAMBURGER MENU
+//  TRAINING COMPLETIONS
 // ══════════════════════════════════════════════════════════
+async function loadCompletionStatus(articleId) {
+  const wrap = document.getElementById('completionBtnWrap');
+  if (!wrap) return;
+
+  const { data } = await sb.from('training_completions')
+    .select('*').eq('article_id', articleId).eq('user_id', currentUser.id).single();
+
+  if (data) {
+    wrap.innerHTML = `
+      <div style="background:#E6F4F1;border-radius:var(--radius);padding:16px;text-align:center">
+        <div style="font-size:28px;margin-bottom:6px">✅</div>
+        <div style="font-size:14px;font-weight:600;color:var(--brand)">Completed!</div>
+        <div style="font-size:12px;color:var(--brown-light);margin-top:3px">${timeAgo(data.completed_at)}</div>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <button onclick="markTrainingComplete(${articleId})" style="width:100%;padding:16px;background:var(--brand);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer">
+        ✅ Mark as completed
+      </button>`;
+  }
+}
+
+async function markTrainingComplete(articleId) {
+  const staffName = currentUser.email.split('@')[0];
+  const { error } = await sb.from('training_completions').insert({
+    article_id: articleId,
+    user_id: currentUser.id,
+    staff_name: staffName,
+  });
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast('Training marked as completed! ✅');
+  loadCompletionStatus(articleId);
+}
+
+async function loadAdminCompletions() {
+  const el = document.getElementById('adminCompletionsList');
+  el.innerHTML = '<div style="color:var(--brown-light);font-size:13px;padding:8px 0">Loading…</div>';
+
+  // Get all training articles
+  const trainingArticles = allArticles.filter(a => a.category === 'training');
+  if (!trainingArticles.length) {
+    el.innerHTML = '<div style="color:var(--brown-light);font-size:13px;padding:8px 0">No training articles yet.</div>';
+    return;
+  }
+
+  // Get all completions
+  const { data: completions } = await sb.from('training_completions').select('*').order('completed_at', { ascending: false });
+  const { data: users } = await sb.from('profiles').select('id, role');
+
+  let html = '';
+  for (const article of trainingArticles) {
+    const articleCompletions = (completions || []).filter(c => c.article_id === article.id);
+    html += `
+      <div style="background:var(--surface);border:1px solid var(--cream-dark);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:600;color:var(--brown);margin-bottom:10px">🎓 ${escHtml(article.title)}</div>
+        ${articleCompletions.length ? articleCompletions.map(c => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--cream-dark)">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px">✅</span>
+              <span style="font-size:13px;font-weight:500;color:var(--brown)">${escHtml(c.staff_name || 'Unknown')}</span>
+            </div>
+            <span style="font-size:12px;color:var(--brown-light)">${timeAgo(c.completed_at)}</span>
+          </div>`).join('') :
+          `<div style="font-size:13px;color:var(--brown-light);font-style:italic">No completions yet</div>`}
+      </div>`;
+  }
+  el.innerHTML = html;
+}
 function toggleHamburger() {
   const menu    = document.getElementById('hamburgerMenu');
   const overlay = document.getElementById('hamburgerOverlay');
