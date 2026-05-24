@@ -2606,7 +2606,6 @@ function renderInvCountTab() {
   });
 
   el.innerHTML = html;
-  updateAlertBanner();
   document.getElementById('invReportBtn').style.display = invCounts.length ? 'block' : 'none';
 }
 
@@ -2627,18 +2626,6 @@ function updateCountProgress() {
   if (!el || !total) return;
   el.style.display = 'block';
   el.textContent   = filled + ' of ' + total + ' items counted';
-}
-
-function updateAlertBanner() {
-  const low = invItems.filter(i => { const s=getStatus(i); return s==='low'||s==='out'; });
-  const banner = document.getElementById('invAlertBanner');
-  if (low.length) {
-    document.getElementById('invAlertText').textContent =
-      low.length + ' item' + (low.length>1?'s':'') + ' at or below minimum: ' + low.map(i=>i.name).join(', ');
-    banner.style.display = 'flex';
-  } else {
-    banner.style.display = 'none';
-  }
 }
 
 async function submitInventoryCount() {
