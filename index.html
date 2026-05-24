@@ -2697,6 +2697,12 @@ async function submitInventoryCount() {
   document.getElementById('invNotes').value = '';
   await loadInvData();
   renderInvCountTab();
+  // Clear all inputs to blank after submission
+  invItems.forEach(item => {
+    const inp = document.getElementById('iq_' + item.id);
+    if (inp) inp.value = '';
+  });
+  updateCountProgress();
   document.getElementById('invReportBtn').style.display = 'block';
 }
 
