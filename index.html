@@ -1778,6 +1778,12 @@ async function renderChecklist(article) {
       if (!sectionOrder.find(s => s.key === current)) {
         sectionOrder.push({ key: current, label: key, tasks: sections[current] });
       }
+    } else if (t.startsWith('[wed:')) {
+      const target = t.replace('[wed:','').replace(']','').trim();
+      sections['_wed_inject'] = [target];
+    } else if (t.startsWith('[sun:')) {
+      const target = t.replace('[sun:','').replace(']','').trim();
+      sections['_sun_inject'] = [target];
     } else if (t && current) {
       sections[current].push(t);
     }
@@ -1834,19 +1840,40 @@ async function renderChecklist(article) {
 
   let dailyHtml = '';
   if (hasSections) {
-    // Render each named section as its own card
-    dailyHtml = sectionOrder.filter(s => !DAY_KEYS.slice(1).includes(s.key)).map(s => `
+    // Check for day injection targets e.g. [wed: equipment & station]
+    const wedInject = sections['_wed_inject'] ? sections['_wed_inject'][0] : null;
+    const sunInject = sections['_sun_inject'] ? sections['_sun_inject'][0] : null;
+    const wedTasks  = sections['wednesday'] || [];
+    const sunTasks  = sections['sunday'] || [];
+
+    dailyHtml = sectionOrder.filter(s => !DAY_KEYS.slice(1).includes(s.key) && !s.key.startsWith('_')).map(s => {
+      // Inject day tasks into matching section
+      let extraTasks = [];
+      if (todayName === 'wednesday' && wedInject && s.label.toLowerCase().includes(wedInject.toLowerCase())) {
+        extraTasks = wedTasks;
+      }
+      if (todayName === 'sunday' && sunInject && s.label.toLowerCase().includes(sunInject.toLowerCase())) {
+        extraTasks = sunTasks;
+      }
+      const allTasks = [...s.tasks, ...extraTasks];
+      return `
       <div class="cl-section" style="margin-bottom:10px">
         <div class="cl-section-header">
           <span>${escHtml(s.label)}</span>
-          <span class="cl-prog">0 / ${s.tasks.length}</span>
+          <span class="cl-prog">0 / ${allTasks.length}</span>
         </div>
         ${s.tasks.map(t => `
           <div class="cl-task" onclick="clToggle(this,'daily')">
             <div class="cl-cb"><span class="cl-ck">✓</span></div>
             <div class="cl-text">${escHtml(t)}</div>
           </div>`).join('')}
-      </div>`).join('');
+        ${extraTasks.map(t => `
+          <div class="cl-task cl-day-task" onclick="clToggle(this,'day')">
+            <div class="cl-cb cl-cb-day"><span class="cl-ck">✓</span></div>
+            <div class="cl-text cl-text-day">${escHtml(t)}</div>
+          </div>`).join('')}
+      </div>`;
+    }).join('');
   } else {
     const tasks = sections['daily'] || [];
     dailyHtml = `
@@ -1863,9 +1890,15 @@ async function renderChecklist(article) {
       </div>`;
   }
 
-  // Day-specific tasks
+  // Day-specific tasks — only show standalone if no injection configured
+  const wedInjectDefined = !!sections['_wed_inject'];
+  const sunInjectDefined = !!sections['_sun_inject'];
   const dayTasks = sections[todayName] || [];
-  const dayHtml = dayTasks.length ? `
+  const showStandaloneDay = dayTasks.length && !(
+    (todayName === 'wednesday' && wedInjectDefined) ||
+    (todayName === 'sunday' && sunInjectDefined)
+  );
+  const dayHtml = showStandaloneDay ? `
     <div class="cl-section cl-day">
       <div class="cl-section-header">
         <span>${todayLabel}</span>
