@@ -2191,7 +2191,13 @@ function handleSearch(q) {
   renderArticleList(results);
 }
 
+function closeAllPanels() {
+  document.getElementById('screen-detail').classList.remove('open');
+  document.getElementById('screen-category').classList.remove('open');
+}
+
 function goHome(btn) {
+  closeAllPanels();
   setActiveNav(btn);
   document.getElementById('searchInput').value = '';
   document.querySelectorAll('.cat-pill').forEach((p,i) => p.classList.toggle('active', i===0));
@@ -2199,11 +2205,13 @@ function goHome(btn) {
 }
 
 function goSearch(btn) {
+  closeAllPanels();
   setActiveNav(btn);
   document.getElementById('searchInput').focus();
 }
 
 function goBookmarks(btn) {
+  closeAllPanels();
   setActiveNav(btn);
   document.getElementById('featuredBanner').style.display = 'none';
   document.getElementById('catGrid').style.display = 'none';
@@ -2514,6 +2522,7 @@ const INV_CATS = {
 };
 
 async function openInventory(btn) {
+  closeAllPanels();
   if (btn) setActiveNav(btn);
   document.getElementById('invDate').value = new Date().toISOString().split('T')[0];
   if (currentUser) {
